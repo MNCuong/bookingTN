@@ -1,12 +1,16 @@
 package com.example.booking.Entity;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Entity
 @Table(name = "users")
@@ -19,4 +23,8 @@ public class User {
     private String phone;
     private String passwordHash;
     private LocalDateTime createdAt = LocalDateTime.now();
+    private String verificationToken;
+    private Date tokenExpiryDate;
+    private boolean isVerified;
+    private String roles;
 }

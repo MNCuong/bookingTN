@@ -3,12 +3,12 @@ package com.example.booking.Entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+
+import lombok.*;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Entity
 @Table(name = "flight_bookings")
