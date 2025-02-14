@@ -1,7 +1,5 @@
 package com.example.booking.Entity;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -9,7 +7,8 @@ import java.time.LocalDateTime;
 
 @Builder
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "tour_bookings")
 public class TourBooking {

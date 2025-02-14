@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Entity
 @Table(name = "attraction_bookings")

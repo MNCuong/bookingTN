@@ -2,12 +2,12 @@ package com.example.booking.Entity;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+
+import lombok.*;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Entity
 @Table(name = "car_rentals")
