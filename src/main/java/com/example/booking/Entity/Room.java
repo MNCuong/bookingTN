@@ -18,9 +18,8 @@ public class Room {
     private Long id;
     @ManyToOne
     private Hotel hotel;
-    private BigDecimal price;
-    @Enumerated(EnumType.STRING)
-    private RoomTypeEnums type;
+    private Double price;
+    private String type;
     private int capacity;
     private boolean availability;
 }

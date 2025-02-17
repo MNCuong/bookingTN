@@ -1,101 +1,144 @@
 package com.example.booking.Service.Impl;
 
-import com.example.booking.Exception.MinIOException;
 import com.example.booking.Service.MinIOService;
-import io.minio.BucketExistsArgs;
-import io.minio.GetObjectArgs;
-import io.minio.GetObjectResponse;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
-import io.minio.http.Method;
-
-import java.io.ByteArrayInputStream;
-
+import io.minio.*;
+import io.minio.errors.MinioException;
+import io.minio.messages.Item;
+import lombok.AllArgsConstructor;
+import lombok.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.stereotype.Service;
 
-@Component
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+@AllArgsConstructor
+@Service
 public class MinIOServiceImpl implements MinIOService {
     private static final Logger log = LoggerFactory.getLogger(MinIOServiceImpl.class);
-    @Autowired
-    private MinioClient minioClient;
-    public static final String MINIO_ERROR = "MINIO_ERROR";
 
-    public MinIOServiceImpl() {
-    }
+    private final MinioClient minioClient;
+    private final String bucketName = "booking";
 
-    public String getPresignedUrl(String fileName, String bucketName) {
+    // Upload file to MinIO with hotelId and roomType in the file name
+    @Override
+    public void uploadFile(InputStream fileStream, String fileName, String contentType, String hotelId, String roomType, Long roomId) throws MinioException {
         try {
-            return this.minioClient.getPresignedObjectUrl((GetPresignedObjectUrlArgs) ((GetPresignedObjectUrlArgs.Builder) ((GetPresignedObjectUrlArgs.Builder) GetPresignedObjectUrlArgs.builder().method(Method.GET).bucket(bucketName)).object(fileName)).build());
-        } catch (Exception exception) {
-            throw new MinIOException("MINIO_ERROR", "getPresignedUrl error fileName = " + fileName + " , bucketName = " + bucketName, exception);
-        }
-    }
+            String newFileName = "Room" + "/" + hotelId + "/" + roomType + "/" + roomId + "/" + System.currentTimeMillis() + "_" + fileName;
 
-    public void deleteFile(String fileName, String bucketName) {
-        try {
-            this.minioClient.removeObject((RemoveObjectArgs) ((RemoveObjectArgs.Builder) ((RemoveObjectArgs.Builder) RemoveObjectArgs.builder().bucket(bucketName)).object(fileName)).build());
-        } catch (Exception exception) {
-            throw new MinIOException("MINIO_ERROR", "deleteFile error fileName = " + fileName + " , bucketName = " + bucketName, exception);
-        }
-    }
-
-    public ByteArrayInputStream getInputStreamTemplate(String fileName, String bucketName) {
-        try {
-            GetObjectResponse object = this.minioClient.getObject((GetObjectArgs) ((GetObjectArgs.Builder) ((GetObjectArgs.Builder) GetObjectArgs.builder().bucket(bucketName)).object(fileName)).build());
-            return new ByteArrayInputStream(object.readAllBytes());
-        } catch (Exception exception) {
-            throw new MinIOException("MINIO_ERROR", "getInputStreamTemplate error fileName = " + fileName + " , bucketName = " + bucketName, exception);
-        }
-    }
-
-    public boolean bucketExists(String bucketName) {
-        try {
-            return this.minioClient.bucketExists((BucketExistsArgs) ((BucketExistsArgs.Builder) BucketExistsArgs.builder().bucket(bucketName)).build());
-        } catch (Exception exception) {
-            throw new MinIOException("MINIO_ERROR", "bucketExists error  bucketName = " + bucketName, exception);
-        }
-    }
-
-    public void makeBucket(String bucketName) {
-        try {
-            this.minioClient.makeBucket((MakeBucketArgs) ((MakeBucketArgs.Builder) MakeBucketArgs.builder().bucket(bucketName)).build());
-        } catch (Exception exception) {
-            throw new MinIOException("MINIO_ERROR", "makeBucket error  bucketName = " + bucketName, exception);
-        }
-    }
-
-    public ByteArrayInputStream getFile(String fileName, String bucketName) {
-        try {
-            if (this.bucketExists(bucketName)) {
-                GetObjectResponse object = this.minioClient.getObject((GetObjectArgs) ((GetObjectArgs.Builder) ((GetObjectArgs.Builder) GetObjectArgs.builder().bucket(bucketName)).object(fileName)).build());
-                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(object.readAllBytes());
-                return byteArrayInputStream;
-            } else {
-                return null;
+            boolean isExist = minioClient.bucketExists(BucketExistsArgs.builder()
+                    .bucket(bucketName).build());
+            if (!isExist) {
+                minioClient.makeBucket(MakeBucketArgs.builder()
+                        .bucket(bucketName).build());
             }
-        } catch (Exception exception) {
-            throw new MinIOException("MINIO_ERROR", "getFile error fileName = " + fileName + " , bucketName = " + bucketName, exception);
+
+            // Upload file lên MinIO
+//            minioClient.putObject(bucketName, newFileName, fileStream, contentType);
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(newFileName)
+                            .stream(fileStream, fileStream.available(), -1)
+                            .contentType(contentType)
+                            .build()
+            );
+
+        } catch (Exception e) {
+            log.error("Error uploading file to MinIO: {}", e.getMessage());
+            throw new MinioException("Error uploading file to MinIO", e.getMessage());
         }
     }
 
-    public String uploadFile(MultipartFile file, String bucketName, String tmpName) {
-        if (!this.bucketExists(bucketName)) {
-            this.makeBucket(bucketName);
-        }
-
+    // Download file from MinIO
+    @Override
+    public InputStream downloadFile(String fileName) throws MinioException {
         try {
-            this.minioClient.putObject((PutObjectArgs) ((PutObjectArgs.Builder) ((PutObjectArgs.Builder) PutObjectArgs.builder().bucket(bucketName)).object(tmpName)).stream(file.getInputStream(), file.getSize(), -1L).contentType(file.getContentType()).build());
-            return "Done";
-        } catch (Exception exception) {
-            throw new MinIOException("MINIO_ERROR", "uploadFile error bucketName = " + bucketName, exception);
+            return minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(fileName).build());
+        } catch (Exception e) {
+            log.error("Error downloading file from MinIO: {}", e.getMessage());
+            throw new MinioException("Error downloading file from MinIO", e.getMessage());
+        }
+    }
+
+    @Override
+    public List<InputStream> downloadFileViewHotel(String hotelId) throws MinioException {
+        List<InputStream> fileStreams = new ArrayList<>();
+        try {
+            String prefix = "Hotel/" + hotelId + "/";
+
+            Iterable<Result<Item>> objects = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(prefix)
+                            .recursive(true)
+                            .build());
+
+            for (Result<Item> result : objects) {
+                Item item = result.get();
+                InputStream fileStream = minioClient.getObject(
+                        GetObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(item.objectName())
+                                .build());
+                fileStreams.add(fileStream);
+            }
+        } catch (Exception e) {
+            log.error("Error getting files from MinIO: {}", e.getMessage());
+            throw new MinioException("Error getting files from MinIO", e.getMessage());
+        }
+        return fileStreams;
+    }
+
+    // List all files in the bucket
+    @Override
+    public List<Item> listFiles() throws MinioException {
+        List<Item> itemList = new ArrayList<>();
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder().bucket(bucketName).build()
+            );
+            for (Result<Item> result : results) {
+                itemList.add(result.get());
+            }
+        } catch (Exception e) {
+            log.error("Error listing files from bucket", e);
+            throw new MinioException("Error listing files", e.getMessage());
+        }
+        return itemList;
+    }
+
+    @Override
+    public void uploadFileHotel(InputStream fileStream, String fileName, String contentType, String hotelId) throws MinioException {
+        try {
+            String newFileName = "Hotel" + "/" + hotelId + "/" + System.currentTimeMillis() + "_" + fileName;
+
+            boolean isExist = minioClient.bucketExists(BucketExistsArgs.builder()
+                    .bucket(bucketName).build());
+            if (!isExist) {
+                minioClient.makeBucket(MakeBucketArgs.builder()
+                        .bucket(bucketName).build());
+            }
+
+            // Upload file lên MinIO
+//            minioClient.putObject(bucketName, newFileName, fileStream, contentType);
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(newFileName)
+                            .stream(fileStream, fileStream.available(), -1)
+                            .contentType(contentType)
+                            .build()
+            );
+
+        } catch (Exception e) {
+            log.error("Error uploading file to MinIO: {}", e.getMessage());
+            throw new MinioException("Error uploading file to MinIO", e.getMessage());
         }
     }
 }
-
