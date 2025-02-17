@@ -32,7 +32,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        log.info("----------------start--------------");
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
@@ -47,7 +46,6 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        log.info("--------------end--------------");
 
         return http.build();
     }

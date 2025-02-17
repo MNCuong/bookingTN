@@ -21,6 +21,11 @@ public class UserController {
         return ResponseConfig.success(userService.registerUser(registerRequest));
 
     }
+    @PostMapping("/register-hotel")
+    public ResponseEntity<ResponseDto<UserResponse>> registerHotel(@RequestBody RegisterRequest registerRequest) {
+        return ResponseConfig.success(userService.registerHotel(registerRequest));
+
+    }
 
     @GetMapping("/verify")
     public ResponseEntity<ResponseDto<String>> verifyUser(@RequestParam String token, HttpServletResponse response) {

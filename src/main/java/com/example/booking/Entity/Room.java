@@ -1,5 +1,6 @@
 package com.example.booking.Entity;
 
+import com.example.booking.Enum.RoomTypeEnums;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -17,8 +18,9 @@ public class Room {
     private Long id;
     @ManyToOne
     private Hotel hotel;
-    private String type;
     private BigDecimal price;
+    @Enumerated(EnumType.STRING)
+    private RoomTypeEnums type;
     private int capacity;
     private boolean availability;
 }

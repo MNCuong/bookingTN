@@ -37,7 +37,8 @@ public class AuthController {
             log.info("✅ Xác thực thành công cho: " + request.getEmail());
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails.getUsername());
+            log.info("authorities-----------------------"+ userDetails.getAuthorities());
+            String token = jwtUtil.generateToken(userDetails.getUsername(),userDetails.getAuthorities());
             String refreshToken = jwtUtil.generateRefreshToken(userDetails.getUsername());
 
             return ResponseConfig.success(new AuthResponse(token, refreshToken));
@@ -53,8 +54,9 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<ResponseDto<AuthResponse>> refresh(@RequestBody RefreshRequest request) {
-        String username = jwtUtil.extractUsername(request.getRefreshToken());
-        String newToken = jwtUtil.generateToken(username);
+        String email = jwtUtil.extractUsername(request.getRefreshToken());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        String newToken = jwtUtil.generateToken(email,userDetails.getAuthorities());
         return ResponseConfig.success(new AuthResponse(newToken, request.getRefreshToken()));
     }
 }
