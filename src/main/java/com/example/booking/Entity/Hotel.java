@@ -4,6 +4,8 @@ import lombok.*;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,6 +21,8 @@ public class Hotel {
     private String city;
     private String country;
     private String description;
+    private String phone;
+//    private List<String> imgs;
     private BigDecimal rating;
     private LocalDateTime createdAt = LocalDateTime.now();
 }

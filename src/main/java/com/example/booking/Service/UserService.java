@@ -8,4 +8,5 @@ public interface UserService {
     User findUserByEmail(String Email);
     UserResponse registerUser(RegisterRequest request);
     boolean verifyUser(String token);
+    UserResponse registerHotel(RegisterRequest registerRequest);
 }

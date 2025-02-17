@@ -1,10 +1,9 @@
 package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
-import com.example.booking.Common.ServiceMessageConstanst;
+import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.DTO.Request.RegisterRequest;
 import com.example.booking.DTO.Response.UserResponse;
-import com.example.booking.Entity.Role;
 import com.example.booking.Entity.User;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Repository.UserRepository;
@@ -15,7 +14,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -36,16 +35,44 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse registerUser(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new BookingException(ServiceMessageConstanst.EMAIL_EXIST, messageCommon.getMessage(ServiceMessageConstanst.EMAIL_EXIST));
+            throw new BookingException(ServiceMessageConstants.EMAIL_EXIST, messageCommon.getMessage(ServiceMessageConstants.EMAIL_EXIST));
         }
         if (userRepository.existsByPhone(registerRequest.getPhone_number())) {
-            throw new BookingException(ServiceMessageConstanst.PHONE_EXIST, messageCommon.getMessage(ServiceMessageConstanst.PHONE_EXIST));
+            throw new BookingException(ServiceMessageConstants.PHONE_EXIST, messageCommon.getMessage(ServiceMessageConstants.PHONE_EXIST));
         }
         User savedUser = userRepository.save(User.builder()
                 .phone(registerRequest.getPhone_number())
                 .email(registerRequest.getEmail())
                 .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
                 .fullName(registerRequest.getFull_name())
+                .createdAt(LocalDateTime.now())
+                .roles("USER")
+                .build());
+        emailService.sendVerificationEmail(savedUser);
+
+        return UserResponse.builder()
+                .phone_number(registerRequest.getPhone_number())
+                .email(registerRequest.getEmail())
+                .full_name(registerRequest.getFull_name())
+                .created_at(savedUser.getCreatedAt())
+                .role(savedUser.getRoles())
+                .build();
+    }
+
+    @Override
+    public UserResponse registerHotel(RegisterRequest registerRequest) {
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new BookingException(ServiceMessageConstants.EMAIL_EXIST, messageCommon.getMessage(ServiceMessageConstants.EMAIL_EXIST));
+        }
+        if (userRepository.existsByPhone(registerRequest.getPhone_number())) {
+            throw new BookingException(ServiceMessageConstants.PHONE_EXIST, messageCommon.getMessage(ServiceMessageConstants.PHONE_EXIST));
+        }
+        User savedUser = userRepository.save(User.builder()
+                .phone(registerRequest.getPhone_number())
+                .email(registerRequest.getEmail())
+                .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
+                .fullName(registerRequest.getFull_name())
+                .createdAt(LocalDateTime.now())
                 .roles("ADMIN")
                 .build());
         emailService.sendVerificationEmail(savedUser);
@@ -54,6 +81,7 @@ public class UserServiceImpl implements UserService {
                 .phone_number(registerRequest.getPhone_number())
                 .email(registerRequest.getEmail())
                 .full_name(registerRequest.getFull_name())
+                .created_at(savedUser.getCreatedAt())
                 .role(savedUser.getRoles())
                 .build();
     }
