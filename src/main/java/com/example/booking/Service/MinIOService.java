@@ -1,21 +1,18 @@
 package com.example.booking.Service;
 
-import org.springframework.web.multipart.MultipartFile;
+import io.minio.errors.MinioException;
+import io.minio.messages.Item;
 
-import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.List;
 
 public interface MinIOService {
-    String getPresignedUrl(String fileName, String bucketName);
+    void uploadFile(InputStream fileStream, String fileName, String contentType, String hotelId, String roomType, Long roomId) throws MinioException;
+    void uploadFileHotel(InputStream fileStream, String fileName, String contentType, String hotelId) throws MinioException;
 
-    void deleteFile(String fileName, String bucketName);
+    InputStream downloadFile(String fileName) throws MinioException;
+    List<InputStream> downloadFileViewHotel(String hotelId) throws MinioException;
 
-    ByteArrayInputStream getInputStreamTemplate(String fileName, String bucketName);
+    List<Item> listFiles() throws MinioException;
 
-    boolean bucketExists(String bucketName);
-
-    void makeBucket(String bucketName);
-
-    ByteArrayInputStream getFile(String fileName, String bucketName);
-
-    String uploadFile(MultipartFile file, String bucketName, String tmpName);
 }
