@@ -7,13 +7,24 @@ import com.example.booking.DTO.Response.AuthResponse;
 import com.example.booking.DTO.Response.HotelResponse;
 import com.example.booking.Entity.Hotel;
 import com.example.booking.Service.HotelService;
+
+import com.example.booking.Service.MinIOService;
+import io.minio.errors.MinioException;
+import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 @AllArgsConstructor
@@ -21,9 +32,49 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/admin/hotel")
 public class HotelController {
     private final HotelService hotelService;
+    private final MinIOService minIOService;
 
     @PostMapping("/add-hotel")
-    public ResponseEntity<ResponseDto<HotelResponse>> addHotel(@RequestBody HotelRequest request) {
-        return ResponseConfig.success(hotelService.addHotel(request));
+    public ResponseEntity<ResponseDto<HotelResponse>> addHotel(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("phone") String phone,
+            @RequestParam("address") String address,
+            @RequestParam("city") String city,
+            @RequestParam("country") String country,
+            @RequestParam(value = "imgs", required = false) List<MultipartFile> imgs) {
+        HotelRequest hotelRequest = HotelRequest.builder()
+                .name(name)
+                .phone(phone)
+                .address(address)
+                .city(city)
+                .country(country)
+                .build();
+
+        return ResponseConfig.success(hotelService.addHotel(hotelRequest, imgs));
     }
+
+    @GetMapping("/view-hotel")
+    public ResponseEntity<List<InputStreamResource>> viewFiles(@RequestParam("hotelId") String hotelId) {
+        try {
+            // Lấy tất cả ảnh của khách sạn từ MinIO
+            List<InputStream> fileStreams = minIOService.downloadFileViewHotel(hotelId);
+            List<InputStreamResource> resources = new ArrayList<>();
+
+            // Chuyển InputStream thành InputStreamResource
+            for (InputStream fileStream : fileStreams) {
+                InputStreamResource resource = new InputStreamResource(fileStream);
+                resources.add(resource);
+            }
+
+            // Trả về danh sách ảnh với content-type là image/jpeg
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG) // Hoặc MediaType.IMAGE_PNG nếu ảnh là PNG
+                    .body(resources);  // Trả về danh sách các ảnh
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

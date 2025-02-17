@@ -7,9 +7,13 @@ import com.example.booking.Entity.Hotel;
 import com.example.booking.Mapper.HotelMapper;
 import com.example.booking.Repository.HotelRepository;
 import com.example.booking.Service.HotelService;
+import com.example.booking.Service.MinIOService;
+import io.minio.errors.MinioException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,7 +22,7 @@ import java.util.List;
 public class HotelServiceImpl implements HotelService {
     private final HotelRepository hotelRepository;
     private final HotelMapper hotelMapper;
-//    private final ServiceCommon serviceCommon;
+    private final MinIOService minIOService;
 
     @Override
     public List<Hotel> getHotels() {
@@ -31,7 +35,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
-    public HotelResponse addHotel(HotelRequest request) {
+    public HotelResponse addHotel(HotelRequest request,List<MultipartFile> imgs) {
         Hotel hotel = hotelRepository.save(Hotel.builder()
                 .phone(request.getPhone())
                 .city(request.getCity())
@@ -42,6 +46,13 @@ public class HotelServiceImpl implements HotelService {
                 .description(request.getDescription())
                 .createdAt(LocalDateTime.now())
                 .build());
+        imgs.forEach(img -> {
+            try {
+                minIOService.uploadFileHotel(img.getInputStream(),img.getName(),img.getContentType(),hotel.getId().toString());
+            } catch (IOException | MinioException e) {
+                e.printStackTrace();
+            }
+        });
 
         return hotelMapper.toHotelResponse(hotel);
     }
@@ -55,6 +66,11 @@ public class HotelServiceImpl implements HotelService {
     @Override
     public HotelResponse deleteHotel(HotelRequest request) {
         return null;
+    }
+
+    @Override
+    public Hotel getHotelById(Long id) {
+        return hotelRepository.findById(id).orElse(null);
     }
 
 
