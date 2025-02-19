@@ -49,6 +49,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/user/register").permitAll()
+                        .requestMatchers("/bookingBE-MNC/api/hotels/**").permitAll()
+                        .requestMatchers("/es/**").permitAll()
+
                         .requestMatchers("/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
