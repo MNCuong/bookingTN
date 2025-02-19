@@ -2,10 +2,11 @@ package com.example.booking.Entity;
 import lombok.*;
 
 import jakarta.persistence.*;
+import org.springframework.data.elasticsearch.annotations.Document;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
