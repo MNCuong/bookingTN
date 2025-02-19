@@ -1,7 +1,12 @@
 package com.example.booking.DTO.Response;
 
+import com.example.booking.Entity.Room;
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -12,5 +17,7 @@ public class HotelResponse {
     private String address;
     private String city;
     private String country;
-    private String created_at;
+    private LocalDateTime created_at;
+    private List<Room> rooms;
+
 }

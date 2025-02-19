@@ -1,6 +1,8 @@
 package com.example.booking.Entity;
 
 import com.example.booking.Enum.RoomTypeEnums;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -16,11 +18,13 @@ public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
-    private Hotel hotel;
     private Double price;
     private String type;
     private int capacity;
     private boolean availability;
+    @ManyToOne
+    @JoinColumn(name = "hotel_id", nullable = false)
+    @JsonBackReference
+    private Hotel hotel;
 }
 

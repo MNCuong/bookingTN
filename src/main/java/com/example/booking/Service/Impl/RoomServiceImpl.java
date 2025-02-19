@@ -4,6 +4,7 @@ import com.example.booking.Common.MessageCommon;
 import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.DTO.Request.RoomRequest;
 import com.example.booking.DTO.Response.RoomResponse;
+import com.example.booking.DTO.Response.RoomResponse2;
 import com.example.booking.Entity.Hotel;
 import com.example.booking.Entity.Room;
 import com.example.booking.Exception.BookingException;
@@ -48,6 +49,8 @@ public class RoomServiceImpl implements RoomService {
                 .capacity(capacity)
                 .availability(true)
                 .build());
+        hotel.getRooms().add(room);
+        hotelService.save(hotel);
         imgs.forEach(img -> {
             try {
                 minIOService.uploadFile(img.getInputStream(),img.getName(),img.getContentType(),hotelId.toString(),type,room.getId());
@@ -75,5 +78,15 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public Room getRoom(Long id) {
         return roomRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<RoomResponse2> getRoomFromHotel(Long hotelId) {
+        Hotel exHotel = hotelService.getHotelById(hotelId);
+        if(exHotel == null) {
+            throw new BookingException(ServiceMessageConstants.HOTEL_NOT_FOUND, messageCommon.getMessage(ServiceMessageConstants.HOTEL_NOT_FOUND));
+        }
+        List<Room> rooms=exHotel.getRooms();
+        return roomMapper.toRooms(rooms);
     }
 }
