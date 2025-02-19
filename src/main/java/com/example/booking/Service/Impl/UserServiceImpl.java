@@ -3,12 +3,13 @@ package com.example.booking.Service.Impl;
 import com.example.booking.Common.MessageCommon;
 import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.DTO.Request.RegisterRequest;
+import com.example.booking.DTO.Request.UserProfileRequest;
 import com.example.booking.DTO.Response.UserResponse;
 import com.example.booking.Entity.User;
+import com.example.booking.Entity.UserProfile;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Repository.UserRepository;
 import com.example.booking.Service.EmailService;
-import com.example.booking.Service.RoleService;
 import com.example.booking.Service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +26,6 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final MessageCommon messageCommon;
     private final EmailService emailService;
-    private final RoleService roleService;
 
     @Override
     public User findUserByEmail(String email) {
@@ -49,7 +49,6 @@ public class UserServiceImpl implements UserService {
                 .roles("USER")
                 .build());
         emailService.sendVerificationEmail(savedUser);
-
         return UserResponse.builder()
                 .phone_number(registerRequest.getPhone_number())
                 .email(registerRequest.getEmail())

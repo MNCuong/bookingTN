@@ -1,5 +1,6 @@
 package com.example.booking.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -27,4 +28,7 @@ public class User {
     private Date tokenExpiryDate;
     private boolean isVerified;
     private String roles;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private UserProfile userProfile;
 }

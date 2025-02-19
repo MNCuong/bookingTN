@@ -23,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +49,7 @@ public class HotelController {
                 .name(name)
                 .phone(phone)
                 .address(address)
+                .description(description)
                 .city(city)
                 .country(country)
                 .build();
@@ -54,27 +57,31 @@ public class HotelController {
         return ResponseConfig.success(hotelService.addHotel(hotelRequest, imgs));
     }
 
-    @GetMapping("/view-hotel")
-    public ResponseEntity<List<InputStreamResource>> viewFiles(@RequestParam("hotelId") String hotelId) {
-        try {
-            // Lấy tất cả ảnh của khách sạn từ MinIO
-            List<InputStream> fileStreams = minIOService.downloadFileViewHotel(hotelId);
-            List<InputStreamResource> resources = new ArrayList<>();
-
-            // Chuyển InputStream thành InputStreamResource
-            for (InputStream fileStream : fileStreams) {
-                InputStreamResource resource = new InputStreamResource(fileStream);
-                resources.add(resource);
-            }
-
-            // Trả về danh sách ảnh với content-type là image/jpeg
-            return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_JPEG) // Hoặc MediaType.IMAGE_PNG nếu ảnh là PNG
-                    .body(resources);  // Trả về danh sách các ảnh
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+//    @GetMapping("/view-hotel")
+//    public ResponseEntity<List<InputStreamResource>> viewFiles(@RequestParam("hotelId") String hotelId) {
+//        try {
+//            // Lấy tất cả ảnh của khách sạn từ MinIO
+//            List<InputStream> fileStreams = minIOService.downloadFileViewHotel(hotelId);
+//            List<InputStreamResource> resources = new ArrayList<>();
+//
+//            // Chuyển InputStream thành InputStreamResource
+//            for (InputStream fileStream : fileStreams) {
+//                InputStreamResource resource = new InputStreamResource(fileStream);
+//                resources.add(resource);
+//            }
+//
+//            // Trả về danh sách ảnh với content-type là image/jpeg
+//            return ResponseEntity.ok()
+//                    .contentType(MediaType.IMAGE_JPEG) // Hoặc MediaType.IMAGE_PNG nếu ảnh là PNG
+//                    .body(resources);  // Trả về danh sách các ảnh
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
+@GetMapping("/view-hotel")
+public ResponseEntity<ResponseDto<HotelResponse>> viewFiles(@RequestParam("hotelId") long hotelId) {
+        return ResponseConfig.success(hotelService.getHotel(hotelId));
     }
-
 }
+

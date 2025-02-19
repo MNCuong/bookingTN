@@ -9,9 +9,12 @@ import java.util.List;
 
 public interface HotelService {
     List<Hotel> getHotels();
-    HotelResponse getHotel(HotelRequest request);
-    HotelResponse addHotel(HotelRequest request,List<MultipartFile> imgs);
+
+    HotelResponse getHotel(long hotelId);
+
+    HotelResponse addHotel(HotelRequest request, List<MultipartFile> imgs);
     HotelResponse updateHotel(HotelRequest request);
     HotelResponse deleteHotel(HotelRequest request);
     Hotel getHotelById(Long id);
+    Hotel save(Hotel hotel);
 }

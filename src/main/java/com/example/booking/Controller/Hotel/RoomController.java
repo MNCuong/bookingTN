@@ -4,6 +4,7 @@ import com.example.booking.Config.ResponseConfig;
 import com.example.booking.Config.ResponseDto;
 import com.example.booking.DTO.Request.RoomRequest;
 import com.example.booking.DTO.Response.RoomResponse;
+import com.example.booking.DTO.Response.RoomResponse2;
 import com.example.booking.Enum.RoomTypeEnums;
 import com.example.booking.Service.MinIOService;
 import com.example.booking.Service.RoomService;
@@ -45,8 +46,8 @@ public class RoomController {
 
     }
     @GetMapping("/list-room")
-    public ResponseEntity<ResponseDto<List<Item>>> listRoom() throws MinioException {
+    public ResponseEntity<ResponseDto<List<RoomResponse2>>> listRoomFromHotel(@RequestParam Long hotelId) {
 //        List<RoomResponse> arr=minIOService.listFiles();
-        return ResponseConfig.success(minIOService.listFiles());
+        return ResponseConfig.success(roomService.getRoomFromHotel(hotelId));
     }
 }
