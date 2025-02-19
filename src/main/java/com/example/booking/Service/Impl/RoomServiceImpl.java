@@ -71,4 +71,9 @@ public class RoomServiceImpl implements RoomService {
         }
         return roomMapper.toRoom(roomDetail);
     }
+
+    @Override
+    public Room getRoom(Long id) {
+        return roomRepository.findById(id).orElse(null);
+    }
 }
