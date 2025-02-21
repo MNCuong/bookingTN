@@ -1,6 +1,5 @@
 package com.example.booking.Service;
 
-import com.example.booking.DTO.Request.RoomRequest;
 import com.example.booking.DTO.Response.RoomResponse;
 import com.example.booking.DTO.Response.RoomResponse2;
 import com.example.booking.Entity.Room;
@@ -18,6 +17,8 @@ public interface RoomService {
     List<RoomResponse2> getRoomFromHotel(Long hotelId);
 
     List<String> getImgRoom(String hotelId, String roomType, String roomId);
+    RoomResponse updateStateRoom(Long roomId,String state);
+    RoomResponse updateImgRoom(Long roomId,List<MultipartFile> imgs);
 
 
 }

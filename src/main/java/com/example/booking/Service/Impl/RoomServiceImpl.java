@@ -7,8 +7,10 @@ import com.example.booking.DTO.Response.RoomResponse;
 import com.example.booking.DTO.Response.RoomResponse2;
 import com.example.booking.Entity.Hotel;
 import com.example.booking.Entity.Room;
+import com.example.booking.Enum.RoomStateEnums;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Mapper.RoomMapper;
+import com.example.booking.Repository.BookingRepository;
 import com.example.booking.Repository.RoomRepository;
 import com.example.booking.Service.HotelService;
 import com.example.booking.Service.MinIOService;
@@ -24,6 +26,7 @@ import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Service
@@ -33,6 +36,7 @@ public class RoomServiceImpl implements RoomService {
     private final RoomMapper roomMapper;
     private final MinIOService minIOService;
     private final HotelService hotelService;
+    private final BookingRepository bookingRepository;
 
 
     @Transactional
@@ -41,24 +45,25 @@ public class RoomServiceImpl implements RoomService {
         if (price == 0) {
             throw new BookingException(ServiceMessageConstants.PRICE_INVALID, messageCommon.getMessage(ServiceMessageConstants.PRICE_INVALID));
         }
-        Hotel hotel=hotelService.getHotelById(hotelId);
+        Hotel hotel = hotelService.getHotelById(hotelId);
         Room room = roomRepository.save(Room.builder()
                 .type(type)
                 .price(price)
                 .hotel(hotel)
                 .capacity(capacity)
                 .availability(true)
+                .state(RoomStateEnums.AVAILABLE.toString())
                 .build());
         hotel.getRooms().add(room);
         hotelService.save(hotel);
         imgs.forEach(img -> {
             try {
-                minIOService.uploadFile(img.getInputStream(),img.getName(),img.getContentType(),hotelId.toString(),type,room.getId());
+                minIOService.uploadFile(img.getInputStream(), img.getName(), img.getContentType(), hotelId.toString(), type, room.getId());
             } catch (IOException | MinioException e) {
                 e.printStackTrace();
             }
         });
-        return roomMapper.toRoom(room);
+        return roomMapper.toRoom(room.getHotel().getId(),room);
     }
 
     @Override
@@ -72,7 +77,7 @@ public class RoomServiceImpl implements RoomService {
             throw new BookingException(ServiceMessageConstants.ROOM_NOT_FOUND,
                     messageCommon.getMessage(ServiceMessageConstants.ROOM_NOT_FOUND));
         }
-        return roomMapper.toRoom(roomDetail);
+        return roomMapper.toRoom(roomDetail.getHotel().getId(),roomDetail);
     }
 
     @Override
@@ -83,10 +88,10 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public List<RoomResponse2> getRoomFromHotel(Long hotelId) {
         Hotel exHotel = hotelService.getHotelById(hotelId);
-        if(exHotel == null) {
+        if (exHotel == null) {
             throw new BookingException(ServiceMessageConstants.HOTEL_NOT_FOUND, messageCommon.getMessage(ServiceMessageConstants.HOTEL_NOT_FOUND));
         }
-        List<Room> rooms=exHotel.getRooms();
+        List<Room> rooms = exHotel.getRooms();
         return roomMapper.toRooms(rooms);
     }
 
@@ -94,4 +99,28 @@ public class RoomServiceImpl implements RoomService {
     public List<String> getImgRoom(String hotelId, String roomType, String roomId) {
         return minIOService.getRoomImages(hotelId, roomType, roomId);
     }
+
+    public RoomResponse updateStateRoom(Long roomId, String state) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new BookingException(ServiceMessageConstants.ROOM_NOT_FOUND,
+                        messageCommon.getMessage(ServiceMessageConstants.ROOM_NOT_FOUND)));
+        room.setState(state);
+        return roomMapper.toRoom(room.getHotel().getId(),roomRepository.save(room));
+    }
+
+    @Override
+    public RoomResponse updateImgRoom(Long roomId, List<MultipartFile> imgs) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new BookingException(ServiceMessageConstants.ROOM_NOT_FOUND,
+                        messageCommon.getMessage(ServiceMessageConstants.ROOM_NOT_FOUND)));
+        imgs.forEach(img -> {
+            try {
+                minIOService.uploadFile(img.getInputStream(), img.getName(), img.getContentType(), room.getHotel().getId().toString(), room.getType(), room.getId());
+            } catch (IOException | MinioException e) {
+                e.printStackTrace();
+            }
+        });
+        return roomMapper.toRoom(room.getHotel().getId(),room);
+    }
+
 }

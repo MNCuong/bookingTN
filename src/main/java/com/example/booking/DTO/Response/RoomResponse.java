@@ -12,10 +12,11 @@ import java.util.List;
 
 @Data
 public class RoomResponse {
-    private Hotel hotel;
+    private long hotelId;
     private BigDecimal price;
     @Enumerated(EnumType.STRING)
     private RoomTypeEnums type;
     private int capacity;
     private boolean availability;
+    private String state;
 }

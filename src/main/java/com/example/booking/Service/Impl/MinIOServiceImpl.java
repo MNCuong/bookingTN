@@ -106,8 +106,6 @@ public class MinIOServiceImpl implements MinIOService {
     }
 
 
-
-
     @Override
     public void uploadFileHotel(InputStream fileStream, String fileName, String contentType, String hotelId) throws MinioException {
         try {
@@ -137,7 +135,7 @@ public class MinIOServiceImpl implements MinIOService {
         }
     }
 
-//    hàm lấy ảnh
+    //    hàm lấy ảnh
     private List<String> getImagesByPrefix(String prefix) {
         List<String> imageUrls = new ArrayList<>();
         try {
@@ -152,7 +150,7 @@ public class MinIOServiceImpl implements MinIOService {
                                 .method(Method.GET)
                                 .bucket(bucketName)
                                 .object(item.objectName())
-                                .expiry(60 * 60) // URL có hiệu lực 1 giờ
+                                .expiry(60 * 60 * 24 * 7) // URL có hiệu lực 7 ngayf
                                 .build()
                 );
                 imageUrls.add(url);

@@ -37,7 +37,7 @@ public class RoomController {
             @RequestParam("capacity") int capacity,
             @RequestParam("availability") boolean availability,
             @RequestParam("imgs") List<MultipartFile> imgs) {
-        return ResponseConfig.success(roomService.addRoom( hotelId,price,type,capacity,availability,imgs));
+        return ResponseConfig.success(roomService.addRoom(hotelId, price, type, capacity, availability, imgs));
 
     }
 
@@ -46,15 +46,27 @@ public class RoomController {
         return ResponseConfig.success(roomService.roomDetail(idRoom));
 
     }
+
     @GetMapping("/list-room")
     public ResponseEntity<ResponseDto<List<RoomResponse2>>> listRoomFromHotel(@RequestParam Long hotelId) {
 //        List<RoomResponse> arr=minIOService.listFiles();
         return ResponseConfig.success(roomService.getRoomFromHotel(hotelId));
     }
+
     @GetMapping("/Img-room")
     public ResponseEntity<ResponseDto<List<String>>> getImg(@RequestParam("hotelId") String hotelId,
                                                             @RequestParam("roomType") String roomType,
                                                             @RequestParam("roomId") String roomId) {
-        return ResponseConfig.success(roomService.getImgRoom(hotelId,roomType,roomId));
+        return ResponseConfig.success(roomService.getImgRoom(hotelId, roomType, roomId));
+    }
+
+    @PutMapping("/update-state-room")
+    public ResponseEntity<ResponseDto<RoomResponse>> updateStateRoom(@RequestParam("roomId") long roomId, @RequestParam("state") String state) {
+        return ResponseConfig.success(roomService.updateStateRoom(roomId, state));
+    }
+
+    @PutMapping("/update-image-room")
+    public ResponseEntity<ResponseDto<RoomResponse>> updateImgRoom(@RequestParam("roomId") long roomId, @RequestParam("imgs") List<MultipartFile> imgs) {
+        return ResponseConfig.success(roomService.updateImgRoom(roomId, imgs));
     }
 }
