@@ -79,9 +79,9 @@ public class HotelController {
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 //        }
 //    }
-@GetMapping("/view-hotel")
-public ResponseEntity<ResponseDto<HotelResponse>> viewFiles(@RequestParam("hotelId") long hotelId) {
-        return ResponseConfig.success(hotelService.getHotel(hotelId));
+    @GetMapping("/Img-hotel")
+    public ResponseEntity<ResponseDto<List<String>>> getImg(@RequestParam("hotelId") String hotelId) {
+        return ResponseConfig.success(hotelService.getImgHotel(hotelId));
     }
 }
 

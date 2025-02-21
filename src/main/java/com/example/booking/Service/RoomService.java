@@ -10,9 +10,14 @@ import java.util.List;
 
 public interface RoomService {
     RoomResponse addRoom(Long hotelId, double price, String type, int capacity, boolean availability, List<MultipartFile> imgs);
+
     RoomResponse roomDetail(Long id);
+
     Room getRoom(Long id);
+
     List<RoomResponse2> getRoomFromHotel(Long hotelId);
+
+    List<String> getImgRoom(String hotelId, String roomType, String roomId);
 
 
 }

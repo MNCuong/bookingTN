@@ -3,6 +3,7 @@ package com.example.booking.Controller.Hotel;
 import com.example.booking.Config.ResponseConfig;
 import com.example.booking.Config.ResponseDto;
 import com.example.booking.DTO.Request.RoomRequest;
+import com.example.booking.DTO.Response.HotelResponse;
 import com.example.booking.DTO.Response.RoomResponse;
 import com.example.booking.DTO.Response.RoomResponse2;
 import com.example.booking.Enum.RoomTypeEnums;
@@ -49,5 +50,11 @@ public class RoomController {
     public ResponseEntity<ResponseDto<List<RoomResponse2>>> listRoomFromHotel(@RequestParam Long hotelId) {
 //        List<RoomResponse> arr=minIOService.listFiles();
         return ResponseConfig.success(roomService.getRoomFromHotel(hotelId));
+    }
+    @GetMapping("/Img-room")
+    public ResponseEntity<ResponseDto<List<String>>> getImg(@RequestParam("hotelId") String hotelId,
+                                                            @RequestParam("roomType") String roomType,
+                                                            @RequestParam("roomId") String roomId) {
+        return ResponseConfig.success(roomService.getImgRoom(hotelId,roomType,roomId));
     }
 }

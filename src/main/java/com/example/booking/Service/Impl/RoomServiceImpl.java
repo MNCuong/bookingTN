@@ -89,4 +89,9 @@ public class RoomServiceImpl implements RoomService {
         List<Room> rooms=exHotel.getRooms();
         return roomMapper.toRooms(rooms);
     }
+
+    @Override
+    public List<String> getImgRoom(String hotelId, String roomType, String roomId) {
+        return minIOService.getRoomImages(hotelId, roomType, roomId);
+    }
 }
