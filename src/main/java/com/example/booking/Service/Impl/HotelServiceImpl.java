@@ -31,12 +31,6 @@ public class HotelServiceImpl implements HotelService {
     private final MessageCommon messageCommon;
 
     @Override
-    public List<Hotel> getHotels() {
-        return List.of();
-    }
-
-
-    @Override
     public HotelResponse getHotel(long hotelId) {
         Optional<Hotel> hotel = hotelRepository.findHotelWithRooms(hotelId);
         if (hotel.isEmpty()) {
@@ -73,25 +67,20 @@ public class HotelServiceImpl implements HotelService {
         return hotelMapper.toHotelResponse(hotel);
     }
 
-
-    @Override
-    public HotelResponse updateHotel(HotelRequest request) {
-        return null;
-    }
-
-    @Override
-    public HotelResponse deleteHotel(HotelRequest request) {
-        return null;
-    }
-
     @Override
     public Hotel getHotelById(Long id) {
-        return hotelRepository.findById(id).orElse(null);
+        return hotelRepository.findById(id).orElseThrow(BookingException::new);
     }
 
     @Override
     public Hotel save(Hotel hotel) {
         return hotelRepository.save(hotel);
+    }
+
+
+    @Override
+    public List<String> getImgHotel(String hotelId) {
+        return minIOService.getHotelImages(hotelId);
     }
 
 

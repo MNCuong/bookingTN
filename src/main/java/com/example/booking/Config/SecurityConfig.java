@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/user/register").permitAll()
                         .requestMatchers("/bookingBE-MNC/api/hotels/**").permitAll()
+                        .requestMatchers("/api/chatbot/**").permitAll()
                         .requestMatchers("/es/**").permitAll()
 
                         .requestMatchers("/swagger-ui/**",

@@ -13,6 +13,9 @@ public interface MinIOService {
     InputStream downloadFile(String fileName) throws MinioException;
     List<InputStream> downloadFileViewHotel(String hotelId) throws MinioException;
 
-    List<Item> listFiles() throws MinioException;
+    // Lấy ảnh của một khách sạn
+    List<String> getHotelImages(String hotelId);
+    // Lấy ảnh của một phòng theo hotelId, roomType và roomId
+    List<String> getRoomImages(String hotelId, String roomType, String roomId);
 
 }

@@ -3,6 +3,7 @@ package com.example.booking.Service.Impl;
 import com.example.booking.Service.MinIOService;
 import io.minio.*;
 import io.minio.errors.MinioException;
+import io.minio.http.Method;
 import io.minio.messages.Item;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -22,7 +23,6 @@ public class MinIOServiceImpl implements MinIOService {
     private final MinioClient minioClient;
     private final String bucketName = "booking";
 
-    // Upload file to MinIO with hotelId and roomType in the file name
     @Override
     public void uploadFile(InputStream fileStream, String fileName, String contentType, String hotelId, String roomType, Long roomId) throws MinioException {
         try {
@@ -95,23 +95,18 @@ public class MinIOServiceImpl implements MinIOService {
         return fileStreams;
     }
 
-    // List all files in the bucket
     @Override
-    public List<Item> listFiles() throws MinioException {
-        List<Item> itemList = new ArrayList<>();
-        try {
-            Iterable<Result<Item>> results = minioClient.listObjects(
-                    ListObjectsArgs.builder().bucket(bucketName).build()
-            );
-            for (Result<Item> result : results) {
-                itemList.add(result.get());
-            }
-        } catch (Exception e) {
-            log.error("Error listing files from bucket", e);
-            throw new MinioException("Error listing files", e.getMessage());
-        }
-        return itemList;
+    public List<String> getHotelImages(String hotelId) {
+        return getImagesByPrefix("Hotel/" + hotelId + "/");
     }
+
+    @Override
+    public List<String> getRoomImages(String hotelId, String roomType, String roomId) {
+        return getImagesByPrefix("Room/" + hotelId + "/" + roomType + "/" + roomId + "/");
+    }
+
+
+
 
     @Override
     public void uploadFileHotel(InputStream fileStream, String fileName, String contentType, String hotelId) throws MinioException {
@@ -140,5 +135,31 @@ public class MinIOServiceImpl implements MinIOService {
             log.error("Error uploading file to MinIO: {}", e.getMessage());
             throw new MinioException("Error uploading file to MinIO", e.getMessage());
         }
+    }
+
+//    hàm lấy ảnh
+    private List<String> getImagesByPrefix(String prefix) {
+        List<String> imageUrls = new ArrayList<>();
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder().bucket(bucketName).prefix(prefix).build()
+            );
+
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                String url = minioClient.getPresignedObjectUrl(
+                        GetPresignedObjectUrlArgs.builder()
+                                .method(Method.GET)
+                                .bucket(bucketName)
+                                .object(item.objectName())
+                                .expiry(60 * 60) // URL có hiệu lực 1 giờ
+                                .build()
+                );
+                imageUrls.add(url);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return imageUrls;
     }
 }
