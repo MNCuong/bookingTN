@@ -26,5 +26,6 @@ public class Room {
     @JoinColumn(name = "hotel_id", nullable = false)
     @JsonBackReference
     private Hotel hotel;
+    private String state;
 }
 
