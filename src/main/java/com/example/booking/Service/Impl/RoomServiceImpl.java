@@ -95,6 +95,26 @@ public class RoomServiceImpl implements RoomService {
         return roomMapper.toRooms(rooms);
     }
 
+
+    @Override
+    public List<RoomResponse2> getAllRoom() {
+        return roomMapper.toRooms(roomRepository.findAll());
+    }
+
+    @Override
+    public List<RoomResponse2> getListStandardRoom() {
+        return roomMapper.toRooms(roomRepository.findRoomByTypeStandard());
+    }
+
+    @Override
+    public List<RoomResponse2> getListSingleRoom() {
+        return roomMapper.toRooms(roomRepository.findRoomByTypeSingle());
+    }
+    @Override
+    public List<RoomResponse2> getListDoubleRoom() {
+        return roomMapper.toRooms(roomRepository.findRoomByTypeDouble());
+    }
+
     @Override
     public List<String> getImgRoom(String hotelId, String roomType, String roomId) {
         return minIOService.getRoomImages(hotelId, roomType, roomId);

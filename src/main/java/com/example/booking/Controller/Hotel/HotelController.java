@@ -3,31 +3,17 @@ package com.example.booking.Controller.Hotel;
 import com.example.booking.Config.ResponseConfig;
 import com.example.booking.Config.ResponseDto;
 import com.example.booking.DTO.Request.HotelRequest;
-import com.example.booking.DTO.Response.AuthResponse;
 import com.example.booking.DTO.Response.HotelResponse;
-import com.example.booking.Entity.Hotel;
 import com.example.booking.Service.HotelService;
-
 import com.example.booking.Service.MinIOService;
-import io.minio.errors.MinioException;
-import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
+@CrossOrigin(origins = "*")
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 @AllArgsConstructor
 @RestController

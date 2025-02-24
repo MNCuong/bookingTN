@@ -1,0 +1,7 @@
+package com.example.booking.Elasticsearch.Repo;
+
+import com.example.booking.Elasticsearch.Entity.BookingDocument;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+
+public interface BookingDocRepository extends ElasticsearchRepository<BookingDocument, Long> {
+}

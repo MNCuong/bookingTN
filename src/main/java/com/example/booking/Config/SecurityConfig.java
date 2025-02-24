@@ -37,20 +37,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-            http.csrf(csrf -> csrf.disable())
-                    .cors(cors -> cors.configurationSource(request -> {
-                        CorsConfiguration config = new CorsConfiguration();
-                        config.setAllowedOrigins(List.of("http://192.168.1.101:3000","http://localhost:3000","http://127.0.0.1:5500")); // Thay bằng IP FE
-                        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                        config.setAllowedHeaders(List.of("*"));
-                        config.setAllowCredentials(true);
-                        return config;
-                    }))
+        http.csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("https://master-filly-mostly.ngrok-free.app", "http://localhost:3000"));
+                    // Nếu chỉ muốn mở cho ngrok, dùng:
+                    // config.setAllowedOrigins(List.of("https://*.ngrok.io", "http://localhost:3000"));
+
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    config.setAllowedHeaders(List.of("*"));
+                    config.setAllowCredentials(true);
+                    return config;
+                }))
+
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/user/register").permitAll()
                         .requestMatchers("/bookingBE-MNC/api/hotels/**").permitAll()
                         .requestMatchers("/api/chatbot/**").permitAll()
+                        .requestMatchers("/api/sync/**").permitAll()
+                        .requestMatchers("/api/v1/elastic/**").permitAll()
                         .requestMatchers("/es/**").permitAll()
 
                         .requestMatchers("/swagger-ui/**",
