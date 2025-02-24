@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
-
+@CrossOrigin(origins = "*")
 @AllArgsConstructor
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 @RestController
@@ -68,5 +68,21 @@ public class RoomController {
     @PutMapping("/update-image-room")
     public ResponseEntity<ResponseDto<RoomResponse>> updateImgRoom(@RequestParam("roomId") long roomId, @RequestParam("imgs") List<MultipartFile> imgs) {
         return ResponseConfig.success(roomService.updateImgRoom(roomId, imgs));
+    }
+    @GetMapping("/list-all-room")
+    public ResponseEntity<ResponseDto<List<RoomResponse2>>> listAllRoom() {
+        return ResponseConfig.success(roomService.getAllRoom());
+    }
+    @GetMapping("/list-single-room")
+    public ResponseEntity<ResponseDto<List<RoomResponse2>>> listSingleRoom() {
+        return ResponseConfig.success(roomService.getListSingleRoom());
+    }
+    @GetMapping("/list-standard-room")
+    public ResponseEntity<ResponseDto<List<RoomResponse2>>> listStandardRoom() {
+        return ResponseConfig.success(roomService.getListStandardRoom());
+    }
+    @GetMapping("/list-double-room")
+    public ResponseEntity<ResponseDto<List<RoomResponse2>>> listDoubleRoom() {
+        return ResponseConfig.success(roomService.getListDoubleRoom());
     }
 }

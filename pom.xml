@@ -70,6 +70,13 @@
 			<artifactId>elasticsearch-java</artifactId>
 			<version>8.13.0</version> <!-- Cập nhật phiên bản mới nhất -->
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch -->
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>8.17.2</version>
+		</dependency>
+
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>

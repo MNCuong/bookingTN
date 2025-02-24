@@ -15,7 +15,10 @@ public interface RoomService {
     Room getRoom(Long id);
 
     List<RoomResponse2> getRoomFromHotel(Long hotelId);
-
+    List<RoomResponse2> getAllRoom();
+    List<RoomResponse2> getListStandardRoom();
+    List<RoomResponse2> getListSingleRoom();
+    List<RoomResponse2> getListDoubleRoom();
     List<String> getImgRoom(String hotelId, String roomType, String roomId);
     RoomResponse updateStateRoom(Long roomId,String state);
     RoomResponse updateImgRoom(Long roomId,List<MultipartFile> imgs);

@@ -1,16 +1,17 @@
 package com.example.booking.Elasticsearch.Service.Impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import com.example.booking.Elasticsearch.Entity.HotelDocument;
 import com.example.booking.Elasticsearch.Repo.HotelDocRepository;
 import com.example.booking.Elasticsearch.Service.HotelServiceElastic;
-import com.example.booking.Service.HotelService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -23,10 +24,13 @@ import java.util.stream.Collectors;
 @Service
 public class HotelServiceElasticImpl implements HotelServiceElastic {
     private final ElasticsearchClient elasticsearchClient;
-private final HotelDocRepository hotelDocRepository;
-    public HotelServiceElasticImpl(ElasticsearchClient elasticsearchClient, HotelDocRepository hotelDocRepository) {
+    private final HotelDocRepository hotelDocRepository;
+    private final ElasticsearchOperations elasticsearchOperations;
+
+    public HotelServiceElasticImpl(ElasticsearchClient elasticsearchClient, HotelDocRepository hotelDocRepository, ElasticsearchOperations elasticsearchOperations) {
         this.elasticsearchClient = elasticsearchClient;
         this.hotelDocRepository = hotelDocRepository;
+        this.elasticsearchOperations = elasticsearchOperations;
     }
 
     @Override
@@ -63,5 +67,19 @@ private final HotelDocRepository hotelDocRepository;
 
     public Optional<HotelDocument> searchDocumentsByField(String field) {
         return hotelDocRepository.findById(field);
+    }
+
+
+    public List<HotelDocument> searchHotelByName(String name) {
+        NativeQuery query = NativeQuery.builder()
+                .withQuery(q -> q.match(m -> m
+                        .field("name")
+                        .query(name)
+                        .operator(Operator.Or) // Chỉ cần chứa từ khóa, không cần khớp toàn bộ
+                ))
+                .build();
+
+        SearchHits<HotelDocument> searchHits = elasticsearchOperations.search(query, HotelDocument.class);
+        return searchHits.stream().map(hit -> hit.getContent()).collect(Collectors.toList());
     }
 }
