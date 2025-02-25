@@ -26,7 +26,7 @@ public class User {
     private LocalDateTime createdAt = LocalDateTime.now();
     private String verificationToken;
     private Date tokenExpiryDate;
-    private boolean isVerified;
+    private boolean verified;
     private String roles;
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference

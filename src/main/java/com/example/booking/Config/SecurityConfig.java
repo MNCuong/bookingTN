@@ -37,19 +37,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(csrf -> csrf.disable())
+        http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("https://master-filly-mostly.ngrok-free.app", "http://localhost:3000"));
-                    // Nếu chỉ muốn mở cho ngrok, dùng:
-                    // config.setAllowedOrigins(List.of("https://*.ngrok.io", "http://localhost:3000"));
-
+                    config.setAllowedOrigins(List.of("*")); // Cho phép https
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
                     return config;
                 }))
-
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/user/register").permitAll()
@@ -57,11 +53,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/chatbot/**").permitAll()
                         .requestMatchers("/api/sync/**").permitAll()
                         .requestMatchers("/api/v1/elastic/**").permitAll()
+                        .requestMatchers("/api/v1/auth/verify").permitAll()
                         .requestMatchers("/es/**").permitAll()
-
-                        .requestMatchers("/swagger-ui/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/user/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
