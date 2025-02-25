@@ -10,11 +10,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/payment")
@@ -22,8 +20,8 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping("/pay")
-    public ResponseEntity<ResponseDto<String>> getPay(@RequestParam long amount, @RequestParam String bankCode) throws UnsupportedEncodingException {
-        return ResponseConfig.success(paymentService.getPay(amount, bankCode));
+    public ResponseEntity<ResponseDto<String>> getPay(@RequestParam long amount, @RequestParam String bankCode, HttpServletRequest request) throws UnsupportedEncodingException {
+        return ResponseConfig.success(paymentService.getPay(amount, bankCode,request));
     }
     @GetMapping("/returnUrl")
     public ResponseEntity<ResponseDto<String>> GetMapping(HttpServletRequest request, Model model){

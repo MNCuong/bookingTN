@@ -20,4 +20,5 @@ public class Flight {
     private LocalDateTime departureTime;
     private LocalDateTime arrivalTime;
     private BigDecimal price;
+    private BigDecimal discountPrice;
 }

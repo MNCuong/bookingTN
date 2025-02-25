@@ -20,7 +20,7 @@ public class FlightBooking {
     private User user;
     @ManyToOne
     private Flight flight;
-    private int numTickets;
+    private int seat_number;
     private BigDecimal totalPrice;
     private String status;
     private LocalDateTime createdAt = LocalDateTime.now();
