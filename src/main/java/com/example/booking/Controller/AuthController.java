@@ -6,7 +6,10 @@ import com.example.booking.DTO.Request.LoginRequest;
 import com.example.booking.DTO.Request.RefreshRequest;
 import com.example.booking.DTO.Response.AuthResponse;
 import com.example.booking.Service.Impl.UserDetailsServiceImpl;
+import com.example.booking.Service.Impl.VerificationService;
+import com.example.booking.Service.UserService;
 import com.example.booking.Utils.JwtUtil;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
@@ -14,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+@AllArgsConstructor
 @CrossOrigin(origins = "*")
 @Slf4j
 @RestController
@@ -22,12 +26,14 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
+    private final VerificationService verificationService;
+    private final UserService userService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
-    }
+//    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {
+//        this.authenticationManager = authenticationManager;
+//        this.jwtUtil = jwtUtil;
+//        this.userDetailsService = userDetailsService;
+//    }
 
     @PostMapping("/login")
     public ResponseEntity<ResponseDto<AuthResponse>> login(@RequestBody LoginRequest request) {
@@ -59,5 +65,21 @@ public class AuthController {
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         String newToken = jwtUtil.generateToken(email,userDetails.getAuthorities());
         return ResponseConfig.success(new AuthResponse(newToken, request.getRefreshToken()));
+    }
+    @GetMapping("/verify")
+    public ResponseEntity<String> verifyUser(@RequestParam String userId, @RequestParam String token) {
+        log.info("idusser======================="+ userId+"abc");
+
+        if (verificationService.isTokenValid(userId, token)) {
+            userService.activateUser(userId);  // Kích hoạt tài khoản
+            verificationService.deleteVerificationToken(userId);
+            return ResponseEntity.ok("Account verified successfully!");
+        } else {
+            log.info("idusser======================="+ userId+"abc");
+            verificationService.deleteVerificationToken(userId);
+            Long idUser= Long.parseLong(userId);
+            userService.deleteById(idUser);  // Xóa tài khoản nếu token không hợp lệ
+            return ResponseEntity.badRequest().body("Invalid or expired token! Registration failed.");
+        }
     }
 }

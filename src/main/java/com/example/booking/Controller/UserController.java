@@ -27,16 +27,5 @@ public class UserController {
 
     }
 
-    @GetMapping("/verify")
-    public ResponseEntity<ResponseDto<String>> verifyUser(@RequestParam String token, HttpServletResponse response) {
-        boolean verified = userService.verifyUser(token);
-        if (verified) {
-            return ResponseConfig.success("Account verified successfully!");
-        } else {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return ResponseConfig.success("Invalid or expired token!");
-
-        }
-    }
 
 }

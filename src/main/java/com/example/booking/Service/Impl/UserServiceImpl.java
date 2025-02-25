@@ -12,13 +12,18 @@ import com.example.booking.Repository.UserRepository;
 import com.example.booking.Service.EmailService;
 import com.example.booking.Service.UserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
@@ -26,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final MessageCommon messageCommon;
     private final EmailService emailService;
+    private final VerificationService verificationService;
 
     @Override
     public User findUserByEmail(String email) {
@@ -46,6 +52,7 @@ public class UserServiceImpl implements UserService {
                 .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
                 .fullName(registerRequest.getFull_name())
                 .createdAt(LocalDateTime.now())
+                .verified(false)
                 .roles("USER")
                 .build());
         emailService.sendVerificationEmail(savedUser);
@@ -72,6 +79,7 @@ public class UserServiceImpl implements UserService {
                 .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
                 .fullName(registerRequest.getFull_name())
                 .createdAt(LocalDateTime.now())
+                .verified(false)
                 .roles("ADMIN")
                 .build());
         emailService.sendVerificationEmail(savedUser);
@@ -86,6 +94,8 @@ public class UserServiceImpl implements UserService {
     }
 
     public boolean verifyUser(String token) {
+        log.info("token-----------------------: " +token);
+
         Optional<User> user = userRepository.findByVerificationToken(token);
         if (user.isPresent()) {
             User verifiedUser = user.get();
@@ -98,5 +108,37 @@ public class UserServiceImpl implements UserService {
             }
         }
         return false;
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public List<String> getUnverifiedUserIds() {
+        return userRepository.findByVerifiedFalse()
+                .stream()
+                .map(user -> String.valueOf(user.getId()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void activateUser(String userId) {
+        User user = userRepository.findById(Long.parseLong(userId))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setVerified(true);
+        userRepository.save(user);
+    }
+
+    @Scheduled(fixedRate = 60000)  // Chạy mỗi 1 phút
+    public void deleteUnverifiedUsers() {
+        List<String> unverifiedUserIds = getUnverifiedUserIds();
+        for (String userId : unverifiedUserIds) {
+            if (!verificationService.isTokenValid(userId, "")) {
+                Long idUser= Long.parseLong(userId);// Token hết hạn
+                userRepository.deleteById(idUser);
+            }
+        }
     }
 }
