@@ -18,7 +18,7 @@ public class ServiceMessageConstants {
     public static final String USER_PROFILE_NOT_FOUND = "ER-012";
     public static final String HOTEL_NOT_FOUND = "ER-013";
     public static final String THIS_TIME_HAS_BEEN_BOOKED = "ER-014";
-//    public static final String PHONE_EXIST = "ER-015";
+    public static final String TRANS_EXIST = "ER-015";
 //    public static final String PHONE_EXIST = "ER-016";
 //    public static final String PHONE_EXIST = "ER-017";
 //    public static final String PHONE_EXIST = "ER-018";

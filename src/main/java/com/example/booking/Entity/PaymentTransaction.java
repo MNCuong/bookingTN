@@ -12,12 +12,12 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Data
 @Builder
-@Table(name = "PaymentTransaction")
+@Table(name = "payment_transaction")
 @Entity
 public class PaymentTransaction {
 
     @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -33,7 +33,9 @@ public class PaymentTransaction {
     private String paymentMethod;
 
     @Column(nullable = true)
-    private String transactionReference; // Tham chiếu giao dịch (có thể là mã giao dịch từ cổng thanh toán)
-
+    private String transactionNo;
+    // Tham chiếu giao dịch (có thể là mã giao dịch từ cổng thanh toán)
+    @Column(nullable = true)
+    private String description;
 
 }
