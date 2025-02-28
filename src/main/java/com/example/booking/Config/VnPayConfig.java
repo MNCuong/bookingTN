@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,8 +12,6 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @Slf4j
@@ -30,7 +29,6 @@ public class VnPayConfig {
     @Value("${vnpay.TmnCode}")
     private String vnp_TmnCode;
     private String secretKey="ZGENRP14K2JH6O6HU5UHMMXM75Q7YSNK";
-
     @Value("${vnpay.apiUrl}")
     private String vnp_ApiUrl;
 
@@ -68,18 +66,4 @@ public class VnPayConfig {
         }
     }
 
-    public static String hashAllFields(Map<String, String> fields, String secretKey) {
-        List<String> fieldNames = new ArrayList<>(fields.keySet());
-        Collections.sort(fieldNames);
-        StringBuilder sb = new StringBuilder();
-        for (String fieldName : fieldNames) {
-            String fieldValue = fields.get(fieldName);
-            if (fieldValue != null && !fieldValue.isEmpty()) {
-                sb.append(fieldName).append("=").append(fieldValue);
-                sb.append("&");
-            }
-        }
-        sb.setLength(sb.length() - 1); // Xóa dấu '&' cuối cùng
-        return hmacSHA512(secretKey, sb.toString());
-    }
 }
