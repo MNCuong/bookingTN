@@ -6,7 +6,7 @@ import com.example.booking.DTO.Request.LoginRequest;
 import com.example.booking.DTO.Request.RefreshRequest;
 import com.example.booking.DTO.Response.AuthResponse;
 import com.example.booking.Service.Impl.UserDetailsServiceImpl;
-import com.example.booking.Service.Impl.VerificationService;
+import com.example.booking.Service.Impl.RedisService;
 import com.example.booking.Service.UserService;
 import com.example.booking.Utils.JwtUtil;
 import lombok.AllArgsConstructor;
@@ -26,7 +26,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
-    private final VerificationService verificationService;
+    private final RedisService verificationService;
     private final UserService userService;
 
 //    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {

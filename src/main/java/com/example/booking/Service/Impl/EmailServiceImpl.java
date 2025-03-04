@@ -15,7 +15,7 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     private JavaMailSender emailSender;
     @Autowired
-    private VerificationService verificationService;
+    private RedisService verificationService;
 
     public void sendSimpleMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();

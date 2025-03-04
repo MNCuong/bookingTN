@@ -3,10 +3,8 @@ package com.example.booking.Service.Impl;
 import com.example.booking.Common.MessageCommon;
 import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.DTO.Request.RegisterRequest;
-import com.example.booking.DTO.Request.UserProfileRequest;
 import com.example.booking.DTO.Response.UserResponse;
 import com.example.booking.Entity.User;
-import com.example.booking.Entity.UserProfile;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Repository.UserRepository;
 import com.example.booking.Service.EmailService;
@@ -31,7 +29,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final MessageCommon messageCommon;
     private final EmailService emailService;
-    private final VerificationService verificationService;
+    private final RedisService verificationService;
 
     @Override
     public User findUserByEmail(String email) {
@@ -129,6 +127,11 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setVerified(true);
         userRepository.save(user);
+    }
+
+    @Override
+    public Optional<User> findUserById(long userId) {
+        return userRepository.findById(userId);
     }
 
     @Scheduled(fixedRate = 60000)  // Chạy mỗi 1 phút

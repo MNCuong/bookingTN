@@ -1,5 +1,6 @@
 package com.example.booking.Entity;
 
+import com.example.booking.Enum.TypeService;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,8 +35,16 @@ public class PaymentTransaction {
 
     @Column(nullable = true)
     private String transactionNo;
-    // Tham chiếu giao dịch (có thể là mã giao dịch từ cổng thanh toán)
     @Column(nullable = true)
     private String description;
 
+    // Quan hệ với User (Người thanh toán)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+    @Column(nullable = true)
+    private String typeBooking;
+
+    @Column(nullable = true)
+    private TypeService typeService;
 }
