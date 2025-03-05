@@ -1,4 +1,5 @@
 package com.example.booking.Entity;
+import com.example.booking.Enum.FlightStateEnum;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -21,4 +22,5 @@ public class Flight {
     private LocalDateTime arrivalTime;
     private BigDecimal price;
     private BigDecimal discountPrice;
+    private FlightStateEnum state;
 }

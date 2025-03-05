@@ -8,6 +8,7 @@ import com.example.booking.Service.BookingService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*")

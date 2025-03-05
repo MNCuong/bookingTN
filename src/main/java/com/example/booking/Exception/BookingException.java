@@ -1,12 +1,17 @@
 package com.example.booking.Exception;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 
+@Setter
+@Getter
 public class BookingException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(BookingException.class);
@@ -14,7 +19,7 @@ public class BookingException extends RuntimeException {
     private Serializable errorData;
 
     public BookingException() {
-        this((String) null);
+        this(null);
     }
 
     public BookingException(String code) {
@@ -36,13 +41,13 @@ public class BookingException extends RuntimeException {
             this.errorData = errorData;
         } else if (message != null) {
             if (logger.isDebugEnabled()) {
-                this.errorData = new HashMap(Collections.singletonMap("messsage", message));
+                this.errorData = new HashMap<>(Collections.singletonMap("message", message));
             } else {
-                this.errorData = new HashMap();
+                this.errorData = new HashMap<>();
             }
         }
 
-        logger.error(String.format("SocialException(code=[%s], message=[%s])", code, message), cause);
+        logger.error(String.format("BookingException(code=[%s], message=[%s])", code, message), cause);
     }
 
     public String getCode() {

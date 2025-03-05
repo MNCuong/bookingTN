@@ -38,9 +38,9 @@ public class PaymentController {
 //        }
 //    }
 
-    @GetMapping("/vnpay_returnlog")
+    @GetMapping("/vnpay_return")
     public ResponseEntity<ResponseDto<String>> getVNPayResponse(@RequestParam Map<String, String> params) {
-        String fullUrl = "/vnpay_returnlog?" + params.entrySet().stream()
+        String fullUrl = "/vnpay_return?" + params.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .reduce((p1, p2) -> p1 + "&" + p2)
                 .orElse("");

@@ -19,12 +19,11 @@ public class ServiceMessageConstants {
     public static final String HOTEL_NOT_FOUND = "ER-013";
     public static final String THIS_TIME_HAS_BEEN_BOOKED = "ER-014";
     public static final String TRANS_EXIST = "ER-015";
-//    public static final String PHONE_EXIST = "ER-016";
-//    public static final String PHONE_EXIST = "ER-017";
-//    public static final String PHONE_EXIST = "ER-018";
-//    public static final String PHONE_EXIST = "ER-019";
+    public static final String USER_HAVE_NO_RIGHT = "ER-016";
+    public static final String CAR_NOT_FOUND = "ER-017";
+    public static final String ID_INVALID = "ER-018";
+    public static final String PAYMENT_FAILED = "ER-019";
 //    public static final String PHONE_EXIST = "ER-020";
 
-
-
+    public ServiceMessageConstants (){}
 }

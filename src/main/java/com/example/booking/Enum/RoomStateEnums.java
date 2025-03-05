@@ -11,15 +11,15 @@ public enum RoomStateEnums {
 
     @Override
     public String toString() {
-        switch (this) {
-            case AVAILABLE: return "Sẵn sàng";
-            case BOOKED: return "Đã đặt";
-            case OCCUPIED: return "Đang có khách";
-            case CHECKED_OUT: return "Đã trả phòng";
-            case CLEANING: return "Đang dọn dẹp";
-            case UNDER_MAINTENANCE: return "Bảo trì";
-            case OUT_OF_SERVICE: return "Tạm ngừng hoạt động";
-            default: return super.toString();
-        }
+        return switch (this) {
+            case AVAILABLE -> "Sẵn sàng";
+            case BOOKED -> "Đã đặt";
+            case OCCUPIED -> "Đang có khách";
+            case CHECKED_OUT -> "Đã trả phòng";
+            case CLEANING -> "Đang dọn dẹp";
+            case UNDER_MAINTENANCE -> "Bảo trì";
+            case OUT_OF_SERVICE -> "Tạm ngừng hoạt động";
+            default -> super.toString();
+        };
     }
 }

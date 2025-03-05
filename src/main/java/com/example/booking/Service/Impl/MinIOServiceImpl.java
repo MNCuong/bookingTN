@@ -135,12 +135,46 @@ public class MinIOServiceImpl implements MinIOService {
         }
     }
 
+    @Override
+    public void uploadFileCar(InputStream fileStream, String fileName, String contentType, String hotelId, Long carId) throws MinioException {
+        try {
+            String newFileName = "Car" + "/" + hotelId + "/" + carId + "/" + System.currentTimeMillis() + "_" + fileName;
+
+            boolean isExist = minioClient.bucketExists(BucketExistsArgs.builder()
+                    .bucket(bucketName).build());
+            if (!isExist) {
+                minioClient.makeBucket(MakeBucketArgs.builder()
+                        .bucket(bucketName).build());
+            }
+
+            // Upload file lên MinIO
+//            minioClient.putObject(bucketName, newFileName, fileStream, contentType);
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(newFileName)
+                            .stream(fileStream, fileStream.available(), -1)
+                            .contentType(contentType)
+                            .build()
+            );
+
+        } catch (Exception e) {
+            log.error("Error uploading file to MinIO: {}", e.getMessage());
+            throw new MinioException("Error uploading file to MinIO", e.getMessage());
+        }
+    }
+
     //    hàm lấy ảnh
-    private List<String> getImagesByPrefix(String prefix) {
+    @Override
+    public List<String> getImagesByPrefix(String prefix) {
         List<String> imageUrls = new ArrayList<>();
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
-                    ListObjectsArgs.builder().bucket(bucketName).prefix(prefix).build()
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(prefix)
+                            .recursive(true)//duyệt cả sub folder
+                            .build()
             );
 
             for (Result<Item> result : results) {
@@ -160,4 +194,41 @@ public class MinIOServiceImpl implements MinIOService {
         }
         return imageUrls;
     }
+    @Override
+    public List<String> getImagesByCarId(String idCar) {
+        List<String> imageUrls = new ArrayList<>();
+        try {
+            // Lấy tất cả ảnh trong thư mục Car/
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix("Car/")
+                            .recursive(true) // Duyệt hết các folder con
+                            .build()
+            );
+
+            // Duyệt qua từng file
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                String objectName = item.objectName();
+
+                // Check nếu đường dẫn có chứa "/{idCar}/"
+                if (!item.isDir() && objectName.matches("Car/\\d+/" + idCar + "/.*")) {
+                    String url = minioClient.getPresignedObjectUrl(
+                            GetPresignedObjectUrlArgs.builder()
+                                    .method(Method.GET)
+                                    .bucket(bucketName)
+                                    .object(objectName)
+                                    .expiry(60 * 60 * 24 * 7)
+                                    .build()
+                    );
+                    imageUrls.add(url);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return imageUrls;
+    }
+
 }
