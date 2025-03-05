@@ -3,10 +3,14 @@ package com.example.booking.Service.Impl;
 import com.example.booking.Common.MessageCommon;
 import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.Config.VnPayConfig;
+import com.example.booking.DTO.Request.PayRequest;
 import com.example.booking.Entity.PaymentTransaction;
+import com.example.booking.Entity.User;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Repository.PaymentRepository;
 import com.example.booking.Service.PaymentService;
+import com.example.booking.Service.UserService;
+import com.example.booking.Utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,21 +32,26 @@ public class PaymentServiceImpl implements PaymentService {
     private final VnPayConfig vnPayConfig;
     private final PaymentRepository paymentRepository;
     private final MessageCommon messageCommon;
+    private final JwtUtil jwtUtil;
+    private final UserService userService;
 
     @Override
-    public String getPay(long amount_raw, String bankCode, HttpServletRequest request) throws Exception {
+    public String getPay(HttpServletRequest request, PayRequest payRequest) {
+        String token = JwtUtil.getTokenFromRequest(request);
+        String email = jwtUtil.extractUsername(token);
+        User user = userService.findUserByEmail(email);
         String vnp_TxnRef = VnPayConfig.getRandomNumber(8);
         String vnp_IpAddr = vnPayConfig.getIpAddress(request);
-        long amount = amount_raw * 100;
+        long amount = payRequest.getAmount_raw() * 100;
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", "2.1.0");
         vnp_Params.put("vnp_Command", "pay");
         vnp_Params.put("vnp_TmnCode", vnPayConfig.getVnp_TmnCode());
         vnp_Params.put("vnp_Amount", String.valueOf(amount));
-        if (bankCode != null && !bankCode.isEmpty()) {
-            vnp_Params.put("vnp_BankCode", bankCode);
+        if (payRequest.getBankCode() != null && !payRequest.getBankCode().isEmpty()) {
+            vnp_Params.put("vnp_BankCode", payRequest.getBankCode());
         }
-        String orderInfo = "Thanh toán đơn hàng: " + vnp_TxnRef;
+        String orderInfo = "Khách hàng-" + user.getId() + " : " + user.getFullName().toUpperCase(Locale.ROOT) + " thanh toán đơn hàng: " + vnp_TxnRef + ", mã đặt dịch vụ - " + payRequest.getBookingId() + ", loại dịch vụ - " + payRequest.getTypeService();
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_OrderInfo", orderInfo);
         vnp_Params.put("vnp_OrderType", "other");
@@ -78,8 +87,6 @@ public class PaymentServiceImpl implements PaymentService {
                 }
             }
         }
-
-
         String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hashData.toString());
         log.info("data:{}", query.toString());
         query.append("&vnp_SecureHash=").append(vnp_SecureHash);
@@ -142,20 +149,24 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-        public PaymentTransaction saveTran (Map <String, String > params){
-            String status;
-            if (Objects.equals(params.get("vnp_TransactionStatus"), "00")) {
-                status = "Success";
-            } else {
-                status = "Fail";
-            }
-            if(paymentRepository.existsByTransactionNo(params.get("vnp_TransactionNo"))) {
-                throw new BookingException(ServiceMessageConstants.TRANS_EXIST,messageCommon.getMessage(ServiceMessageConstants.TRANS_EXIST,params.get("vnp_TransactionNo")));
-            }
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-            LocalDateTime localDateTime = LocalDateTime.parse(params.get("vnp_PayDate"), formatter);
-            LocalDate payDate = localDateTime.toLocalDate();
-            return paymentRepository.save(PaymentTransaction.builder().amount(Double.parseDouble(params.get("vnp_Amount"))).description(params.get("vnp_OrderInfo")).paymentMethod(params.get("vnp_CardType") == "ATM" ? "Chuyển khoản" : "Thẻ").transactionDate(payDate).transactionNo(params.get("vnp_TransactionNo")).status(status).build());
-                }
+    public void saveTran(Map<String, String> params) {
+        String status;
+        if (Objects.equals(params.get("vnp_TransactionStatus"), "00")) {
+            status = "Success";
+        } else {
+            status = "Fail";
+        }
+        if (paymentRepository.existsByTransactionNo(params.get("vnp_TransactionNo"))) {
+            throw new BookingException(ServiceMessageConstants.TRANS_EXIST, messageCommon.getMessage(ServiceMessageConstants.TRANS_EXIST, params.get("vnp_TransactionNo")));
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        LocalDateTime localDateTime = LocalDateTime.parse(params.get("vnp_PayDate"), formatter);
+        LocalDate payDate = localDateTime.toLocalDate();
+        String orderInfo = params.get("vnp_OrderInfo");
+        String typeBooking = orderInfo.substring(orderInfo.lastIndexOf("-") + 1);
+        String userId = orderInfo.split("-")[1].split(":")[0];
+        User user = userService.findUserById(Long.parseLong(userId.trim())).get();
+        paymentRepository.save(PaymentTransaction.builder().amount(Double.parseDouble(params.get("vnp_Amount"))).description(params.get("vnp_OrderInfo")).paymentMethod(params.get("vnp_CardType")).transactionDate(payDate).user(user).transactionNo(params.get("vnp_TransactionNo")).typeBooking(typeBooking).status(status).build());
     }
+}
 

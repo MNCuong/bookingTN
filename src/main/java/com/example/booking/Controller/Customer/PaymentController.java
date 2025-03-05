@@ -1,22 +1,17 @@
 package com.example.booking.Controller.Customer;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-
 import com.example.booking.Config.ResponseConfig;
 import com.example.booking.Config.ResponseDto;
+import com.example.booking.DTO.Request.PayRequest;
 import com.example.booking.Service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @RestController
@@ -25,8 +20,8 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping("/pay")
-    public ResponseEntity<ResponseDto<String>> getPay(@RequestParam long amount, @RequestParam String bankCode, HttpServletRequest request) throws Exception {
-        return ResponseConfig.success(paymentService.getPay(amount, bankCode, request));
+    public ResponseEntity<ResponseDto<String>> getPay(HttpServletRequest request, @RequestBody PayRequest payRequest) throws Exception {
+        return ResponseConfig.success(paymentService.getPay(request,payRequest));
     }
 
 //    @GetMapping("/vnpay-return")
@@ -44,11 +39,12 @@ public class PaymentController {
 //    }
 
     @GetMapping("/vnpay_returnlog")
-    public ResponseEntity<ResponseDto<String>> getVNPayResponse(@RequestParam Map<String, String> params) throws Exception {
+    public ResponseEntity<ResponseDto<String>> getVNPayResponse(@RequestParam Map<String, String> params) {
         String fullUrl = "/vnpay_returnlog?" + params.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .reduce((p1, p2) -> p1 + "&" + p2)
                 .orElse("");
+        log.info("getVNPayResponse: {}", fullUrl);
         return ResponseConfig.success(paymentService.saveTransaction(params));
     }
 

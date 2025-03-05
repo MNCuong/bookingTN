@@ -12,6 +12,7 @@ import com.example.booking.Exception.BookingException;
 import com.example.booking.Mapper.BookingMapper;
 import com.example.booking.Repository.BookingRepository;
 import com.example.booking.Service.BookingService;
+import com.example.booking.Service.PaymentService;
 import com.example.booking.Service.RoomService;
 import com.example.booking.Service.UserService;
 import com.example.booking.Utils.JwtUtil;
@@ -35,6 +36,8 @@ public class BookingServiceImpl implements BookingService {
     private final UserService userService;
     private final RoomService roomService;
     private final BookingMapper bookingMapper;
+    //    private final PaymentService paymentService;
+    private final RedisService redisService;
 
 
     @Override
@@ -42,7 +45,7 @@ public class BookingServiceImpl implements BookingService {
         String token = JwtUtil.getTokenFromRequest(httpServletRequest);
         String email = jwtUtil.extractUsername(token);
         User user = userService.findUserByEmail(email);
-        Room room=roomService.getRoom(bookingRequest.getRoomId());
+        Room room = roomService.getRoom(bookingRequest.getRoomId());
         long overlappingBookings = bookingRepository.countOverlappingBookings(
                 room.getId(), bookingRequest.getCheckIn(), bookingRequest.getCheckOut());
 
@@ -50,23 +53,22 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingException(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED, messageCommon.getMessage(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED));
         }
         long daysBetween = ChronoUnit.DAYS.between(bookingRequest.getCheckIn(), bookingRequest.getCheckOut());
-        Double toltalPriceRaw = daysBetween * room.getPrice();
+        Double totalPriceRaw = daysBetween * room.getPrice();
         Booking booking = Booking.builder()
                 .user(user)
                 .checkIn(bookingRequest.getCheckIn())
                 .checkOut(bookingRequest.getCheckOut())
                 .status(BookingStatusEnums.PENDING.toString())
-                .totalPrice(toltalPriceRaw)
+                .totalPrice(totalPriceRaw)
                 .room(room)
                 .build();
-        Booking bookingSave ;
-        if(booking.getStatus().equals(BookingStatusEnums.PENDING.toString())) {
-            bookingSave = bookingRepository.save(booking);
-        }else{
+        Booking bookingSave;
+        if (!booking.getStatus().equals(BookingStatusEnums.PENDING.toString())) {
             booking.setStatus(BookingStatusEnums.FAILED.toString());
-            bookingSave = bookingRepository.save(booking);
-
         }
+        bookingSave = bookingRepository.save(booking);
+        redisService.saveBookingAndUser(bookingSave.getId() +
+                "", bookingSave.getUser().getId().toString());
         return bookingMapper.toBookingResponse(bookingSave);
     }
 }
