@@ -1,4 +1,5 @@
 package com.example.booking.Entity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,6 +20,8 @@ public class CarRentalBooking {
     @ManyToOne
     private User user;
     @ManyToOne
+    @JoinColumn(name = "car_id", nullable = false)
+    @JsonBackReference
     private CarRental car;
     private LocalDate startDate;
     private LocalDate endDate;

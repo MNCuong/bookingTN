@@ -36,7 +36,6 @@ public class RoomServiceImpl implements RoomService {
     private final RoomMapper roomMapper;
     private final MinIOService minIOService;
     private final HotelService hotelService;
-    private final BookingRepository bookingRepository;
 
 
     @Transactional
@@ -141,6 +140,16 @@ public class RoomServiceImpl implements RoomService {
             }
         });
         return roomMapper.toRoom(room.getHotel().getId(),room);
+    }
+
+    @Override
+    public Room findById(Long id) {
+        return roomRepository.findById(id).get();
+    }
+
+    @Override
+    public void save(Room room) {
+        roomRepository.save(room);
     }
 
 }

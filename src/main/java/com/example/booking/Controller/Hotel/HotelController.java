@@ -6,6 +6,7 @@ import com.example.booking.DTO.Request.HotelRequest;
 import com.example.booking.DTO.Response.HotelResponse;
 import com.example.booking.Service.HotelService;
 import com.example.booking.Service.MinIOService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +31,7 @@ public class HotelController {
             @RequestParam("address") String address,
             @RequestParam("city") String city,
             @RequestParam("country") String country,
-            @RequestParam(value = "imgs", required = false) List<MultipartFile> imgs) {
+            @RequestParam(value = "imgs", required = false) List<MultipartFile> imgs, HttpServletRequest request) {
         HotelRequest hotelRequest = HotelRequest.builder()
                 .name(name)
                 .phone(phone)
@@ -40,7 +41,7 @@ public class HotelController {
                 .country(country)
                 .build();
 
-        return ResponseConfig.success(hotelService.addHotel(hotelRequest, imgs));
+        return ResponseConfig.success(hotelService.addHotel(hotelRequest, imgs,request));
     }
 
 //    @GetMapping("/view-hotel")

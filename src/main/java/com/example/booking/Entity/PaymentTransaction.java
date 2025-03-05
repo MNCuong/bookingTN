@@ -1,6 +1,6 @@
 package com.example.booking.Entity;
 
-import com.example.booking.Enum.TypeService;
+import com.example.booking.Enum.TypeServiceEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,5 +46,5 @@ public class PaymentTransaction {
     private String typeBooking;
 
     @Column(nullable = true)
-    private TypeService typeService;
+    private TypeServiceEnum typeService;
 }

@@ -1,6 +1,6 @@
 package com.example.booking.Enum;
 
-public enum TypeService {
+public enum TypeServiceEnum {
     KS,
     PLANE,
     CAR
