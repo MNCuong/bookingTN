@@ -176,11 +176,11 @@ public class PaymentServiceImpl implements PaymentService {
                         roomService.save(room);
                     } else if (type.equals(TypeServiceEnum.PLANE.toString())) {
                         FlightBooking flightBooking = flightBookingService.findById(Long.parseLong(bookingId));
-                        flightBooking.setStatus(StatusEnum.CONFIRMED.toString());
-                        flightBookingService.save(flightBooking);
-                        Flight flight = flightService.findById(flightBooking.getFlight().getId());
-                        flight.setState(FlightStateEnum.BOOKED);
-                        flightService.save(flight);
+//                        flightBooking.setStatus(StatusEnum.CONFIRMED.toString());
+//                        flightBookingService.save(flightBooking);
+//                        Flight flight = flightService.findById(flightBooking.getFlight().getId());
+//                        flight.setState(FlightStateEnum.BOOKED);
+//                        flightService.save(flight);
                     }
                     saveTran(params);
                     return "Success";
