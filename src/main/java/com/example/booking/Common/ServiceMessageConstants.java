@@ -23,7 +23,10 @@ public class ServiceMessageConstants {
     public static final String CAR_NOT_FOUND = "ER-017";
     public static final String ID_INVALID = "ER-018";
     public static final String PAYMENT_FAILED = "ER-019";
-//    public static final String PHONE_EXIST = "ER-020";
+    public static final String QUERY_INVALID = "ER-020";
+    public static final String DEPARTURE_NOT_EMPTY = "ER-021";
+    public static final String FROM_LOCATION_NOT_EMPTY = "ER-022";
+    public static final String TO_LOCATION_NOT_EMPTY = "ER-023";
 
     public ServiceMessageConstants (){}
 }
