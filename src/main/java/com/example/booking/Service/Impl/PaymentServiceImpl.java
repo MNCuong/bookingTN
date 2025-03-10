@@ -139,13 +139,14 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    @Transactional(rollbackFor = {Exception.class, BookingException.class})
+    //    @Transactional(rollbackFor = {Exception.class, BookingException.class})
     @Override
     public String saveTransaction(Map<String, String> params) {
         try {
             if (params == null || !params.containsKey("vnp_SecureHash") || !params.containsKey("vnp_ResponseCode")) {
                 return "Invalid Params";
             }
+            log.info("stauts:{}", params.get("vnp_TransactionStatus"));
             boolean verify = verifySignature(params, params.get("vnp_SecureHash"));
             if (verify) {
                 String orderInfo = params.get("vnp_OrderInfo");
@@ -198,12 +199,16 @@ public class PaymentServiceImpl implements PaymentService {
                         flightBooking.setStatus(StatusEnum.FAILED.toString());
                         flightBookingService.save(flightBooking);
                     }
+                    saveTran(params);
                     return "Fail";
                 }
 
             }
 
-        }catch  (Exception e) {
+        } catch (Exception e) {
+            params.put("vnp_TransactionStatus", "99");
+            log.info("status: {}", params.get("vnp_TransactionStatus"));
+            saveTran(params);
             log.error("Payment error: {}", e.getMessage());
             throw new BookingException(ServiceMessageConstants.PAYMENT_FAILED,
                     messageCommon.getMessage(ServiceMessageConstants.PAYMENT_FAILED));
@@ -232,6 +237,66 @@ public class PaymentServiceImpl implements PaymentService {
         String userId = orderInfo.split("-")[1].split(":")[0];
         User user = userService.findUserById(Long.parseLong(userId.trim())).get();
         paymentRepository.save(PaymentTransaction.builder().amount(Double.parseDouble(params.get("vnp_Amount"))).description(params.get("vnp_OrderInfo")).paymentMethod(params.get("vnp_CardType")).transactionDate(payDate).user(user).transactionNo(params.get("vnp_TransactionNo")).typeBooking(typeBooking).status(status).build());
+    }
+
+    @Override
+    public String getPayKafka(PayRequest payRequest) {
+
+        User user = userService.findUserByEmail(payRequest.getUserEmail());
+        String vnp_TxnRef = VnPayConfig.getRandomNumber(8);
+//        String vnp_IpAddr = vnPayConfig.getIpAddress("");
+        long amount = payRequest.getAmount_raw() * 100;
+        Map<String, String> vnp_Params = new HashMap<>();
+        vnp_Params.put("vnp_Version", "2.1.0");
+        vnp_Params.put("vnp_Command", "pay");
+        vnp_Params.put("vnp_TmnCode", vnPayConfig.getVnp_TmnCode());
+        vnp_Params.put("vnp_Amount", String.valueOf(amount));
+        if (payRequest.getBankCode() != null && !payRequest.getBankCode().isEmpty()) {
+            vnp_Params.put("vnp_BankCode", payRequest.getBankCode());
+        }
+        String orderInfo = "Khách hàng-" + user.getId() + " : " + user.getFullName().toUpperCase(Locale.ROOT) + " thanh toán đơn hàng: " + vnp_TxnRef + ", mã đặt dịch vụ - " + payRequest.getBookingId() + ", loại dịch vụ - " + payRequest.getTypeService();
+        vnp_Params.put("vnp_CurrCode", "VND");
+        vnp_Params.put("vnp_OrderInfo", orderInfo);
+        vnp_Params.put("vnp_OrderType", "other");
+        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+        vnp_Params.put("vnp_Locale", "vn");
+        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getVnp_ReturnUrl());
+//        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("ETC/GMT+7"));
+        vnp_Params.put("vnp_CreateDate", formatter.format(cld.getTime()));
+        cld.add(Calendar.HOUR, 10);
+        vnp_Params.put("vnp_ExpireDate", formatter.format(cld.getTime()));
+        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder query = new StringBuilder();
+        StringBuilder hashData = new StringBuilder();
+        Iterator itr = fieldNames.iterator();
+        while (itr.hasNext()) {
+            String fieldName = (String) itr.next();
+            String fieldValue = vnp_Params.get(fieldName);
+            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
+                //Build hash data
+                hashData.append(fieldName);
+                hashData.append('=');
+                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
+                //Build query
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8));
+                query.append('=');
+                query.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
+                if (itr.hasNext()) {
+                    query.append('&');
+                    hashData.append('&');
+                }
+            }
+        }
+        String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hashData.toString());
+        log.info("data:{}", query.toString());
+        query.append("&vnp_SecureHash=").append(vnp_SecureHash);
+        log.info("query:{}", vnp_SecureHash);
+        String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + query.toString();
+        log.info("Payment URL: {}", paymentUrl);
+        return paymentUrl;
     }
 }
 

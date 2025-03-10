@@ -17,12 +17,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseDto<UserResponse>> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<ResponseDto<UserResponse>> register(@ModelAttribute RegisterRequest registerRequest) {
         return ResponseConfig.success(userService.registerUser(registerRequest));
 
     }
     @PostMapping("/register-hotel")
-    public ResponseEntity<ResponseDto<UserResponse>> registerHotel(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<ResponseDto<UserResponse>> registerHotel(@ModelAttribute RegisterRequest registerRequest) {
         return ResponseConfig.success(userService.registerHotel(registerRequest));
 
     }

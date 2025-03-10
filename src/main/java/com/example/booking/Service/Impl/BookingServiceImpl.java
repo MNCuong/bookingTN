@@ -2,13 +2,16 @@ package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
 import com.example.booking.Common.ServiceMessageConstants;
+import com.example.booking.DTO.Event.BookingEvent;
 import com.example.booking.DTO.Request.BookingRequest;
+import com.example.booking.DTO.Request.PayRequest;
 import com.example.booking.DTO.Response.BookingResponse;
 import com.example.booking.Entity.Booking;
 import com.example.booking.Entity.CarRentalBooking;
 import com.example.booking.Entity.Room;
 import com.example.booking.Entity.User;
 import com.example.booking.Enum.BookingStatusEnums;
+import com.example.booking.Enum.TypeServiceEnum;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Mapper.BookingMapper;
 import com.example.booking.Repository.BookingRepository;
@@ -20,11 +23,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.rmi.MarshalException;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Slf4j
@@ -38,7 +43,8 @@ public class BookingServiceImpl implements BookingService {
     private final RoomService roomService;
     private final BookingMapper bookingMapper;
     //    private final PaymentService paymentService;
-    private final RedisService redisService;
+//    private final RedisService redisService;
+    private final KafkaTemplate<String, BookingEvent> kafkaTemplate;
 
 
     @Transactional
@@ -63,6 +69,7 @@ public class BookingServiceImpl implements BookingService {
                 .checkOut(bookingRequest.getCheckOut())
                 .status(BookingStatusEnums.PENDING.toString())
                 .totalPrice(totalPriceRaw)
+                .createdAt(LocalDateTime.now())
                 .room(room)
                 .build();
         Booking bookingSave;
@@ -70,8 +77,15 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus(BookingStatusEnums.FAILED.toString());
         }
         bookingSave = bookingRepository.save(booking);
-        redisService.saveBookingAndUser(bookingSave.getId() +
-                "", bookingSave.getUser().getId().toString());
+//        redisService.saveBookingAndUser(bookingSave.getId() +
+//                "", bookingSave.getUser().getId().toString());
+        BookingEvent bookingEvent = BookingEvent.builder()
+                .bookingId(bookingSave.getId())
+                .userEmail(bookingSave.getUser().getEmail())
+                .totalPrice(bookingSave.getTotalPrice())
+                .typeService(TypeServiceEnum.KS)
+                .build();
+        kafkaTemplate.send("booking_topic", bookingEvent);
         return bookingMapper.toBookingResponse(bookingSave);
     }
 

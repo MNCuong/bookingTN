@@ -18,7 +18,7 @@ public class CarRentalBookingsController {
     private final CarRentalBookingsService carRentalBookingsService;
 
     @PostMapping("/booking-car")
-    public ResponseEntity<ResponseDto<CarRentalBooking>> bookingCar(@RequestBody CarRentalBookingsRequest carRentalBookingsRequest, HttpServletRequest request) {
+    public ResponseEntity<ResponseDto<CarRentalBooking>> bookingCar(@ModelAttribute CarRentalBookingsRequest carRentalBookingsRequest, HttpServletRequest request) {
         return ResponseConfig.success(carRentalBookingsService.bookingCar(carRentalBookingsRequest,request));
     }
 }

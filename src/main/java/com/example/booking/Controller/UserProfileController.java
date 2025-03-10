@@ -21,7 +21,7 @@ public class UserProfileController {
     private final UserProfileService userProfileService;
 
     @PostMapping("/save-user-profile")
-    public ResponseEntity<ResponseDto<UserProfileResponse>> saveUserProfile(@RequestBody UserProfileRequest userProfileRequest, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<ResponseDto<UserProfileResponse>> saveUserProfile(@ModelAttribute UserProfileRequest userProfileRequest, HttpServletRequest httpServletRequest) {
         return ResponseConfig.success(userProfileService.saveUserProfile(userProfileRequest,httpServletRequest));
 
     }

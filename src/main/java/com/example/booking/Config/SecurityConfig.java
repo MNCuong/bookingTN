@@ -55,8 +55,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/elastic/**").permitAll()
                         .requestMatchers("/api/v1/auth/verify").permitAll()
                         .requestMatchers("/es/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/v1/payment/**").permitAll()
                         .requestMatchers("/payment/**").permitAll()
+                        .requestMatchers("/view/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/user/**").hasAnyRole("USER", "ADMIN")
@@ -64,6 +66,10 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .formLogin(form -> form
+                        .loginPage("/view/user/login")
+                        .permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
