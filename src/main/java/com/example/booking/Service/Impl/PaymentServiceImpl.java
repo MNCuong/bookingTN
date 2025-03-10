@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -51,7 +52,7 @@ public class PaymentServiceImpl implements PaymentService {
         User user = userService.findUserByEmail(email);
         String vnp_TxnRef = VnPayConfig.getRandomNumber(8);
         String vnp_IpAddr = vnPayConfig.getIpAddress(request);
-        long amount = payRequest.getAmount_raw() * 100;
+        BigDecimal amount = payRequest.getAmount_raw().multiply(BigDecimal.valueOf(100));
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", "2.1.0");
         vnp_Params.put("vnp_Command", "pay");
@@ -244,8 +245,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         User user = userService.findUserByEmail(payRequest.getUserEmail());
         String vnp_TxnRef = VnPayConfig.getRandomNumber(8);
-//        String vnp_IpAddr = vnPayConfig.getIpAddress("");
-        long amount = payRequest.getAmount_raw() * 100;
+        String vnp_IpAddr = vnPayConfig.getIpAddress();
+        BigDecimal amount = payRequest.getAmount_raw().multiply(BigDecimal.valueOf(100));
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", "2.1.0");
         vnp_Params.put("vnp_Command", "pay");
@@ -261,7 +262,9 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getVnp_ReturnUrl());
-//        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+        log.info("amountPaymentListener:{}",payRequest.getAmount_raw());
+
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("ETC/GMT+7"));
         vnp_Params.put("vnp_CreateDate", formatter.format(cld.getTime()));
@@ -291,12 +294,9 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
         String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hashData.toString());
-        log.info("data:{}", query.toString());
         query.append("&vnp_SecureHash=").append(vnp_SecureHash);
-        log.info("query:{}", vnp_SecureHash);
-        String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + query.toString();
-        log.info("Payment URL: {}", paymentUrl);
-        return paymentUrl;
+        log.info("URLpayment:{}",vnPayConfig.getVnp_PayUrl() + "?" + query.toString());
+        return vnPayConfig.getVnp_PayUrl() + "?" + query.toString();
     }
 }
 

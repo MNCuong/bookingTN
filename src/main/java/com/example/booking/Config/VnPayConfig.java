@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -33,6 +35,18 @@ public class VnPayConfig {
     private String vnp_ApiUrl;
 
     public String getIpAddress(HttpServletRequest request) {
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.isEmpty()) {
+            ipAddress = request.getRemoteAddr();
+        }
+        return ipAddress;
+    }
+    public String getIpAddress() {
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs == null) {
+            return "UNKNOWN"; // Trả về giá trị mặc định nếu không có request
+        }
+        HttpServletRequest request = attrs.getRequest();
         String ipAddress = request.getHeader("X-Forwarded-For");
         if (ipAddress == null || ipAddress.isEmpty()) {
             ipAddress = request.getRemoteAddr();

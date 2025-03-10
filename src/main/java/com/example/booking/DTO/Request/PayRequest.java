@@ -6,10 +6,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Builder
 @Data
 public class PayRequest {
-    long amount_raw;
+    BigDecimal amount_raw;
     String bankCode;
     long bookingId;
     TypeServiceEnum typeService;
