@@ -1,5 +1,6 @@
 package com.example.booking.Config;
 
+import com.example.booking.DTO.Event.BookingEvent;
 import com.example.booking.DTO.Request.EmailRequest;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -15,8 +16,10 @@ import java.util.Map;
 
 @Configuration
 public class KafkaProducerConfig {
+
+    // ProducerFactory cho EmailRequest
     @Bean
-    public ProducerFactory<String, EmailRequest> producerFactory() {
+    public ProducerFactory<String, EmailRequest> emailProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -25,7 +28,22 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, EmailRequest> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public KafkaTemplate<String, EmailRequest> emailKafkaTemplate() {
+        return new KafkaTemplate<>(emailProducerFactory());
+    }
+
+    // ProducerFactory cho BookingEvent
+    @Bean
+    public ProducerFactory<String, BookingEvent> bookingProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, BookingEvent> bookingKafkaTemplate() {
+        return new KafkaTemplate<>(bookingProducerFactory());
     }
 }

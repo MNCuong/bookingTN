@@ -11,6 +11,7 @@ import com.example.booking.Service.UserService;
 import com.example.booking.Utils.JwtUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
@@ -35,8 +36,8 @@ public class AuthController {
 //        this.userDetailsService = userDetailsService;
 //    }
 
-    @PostMapping("/login")
-    public ResponseEntity<ResponseDto<AuthResponse>> login(@RequestBody LoginRequest request) {
+    @PostMapping(value="/login")
+    public ResponseEntity<ResponseDto<AuthResponse>> login(@ModelAttribute LoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
@@ -60,7 +61,7 @@ public class AuthController {
 
 
     @PostMapping("/refresh")
-    public ResponseEntity<ResponseDto<AuthResponse>> refresh(@RequestBody RefreshRequest request) {
+    public ResponseEntity<ResponseDto<AuthResponse>> refresh(@ModelAttribute RefreshRequest request) {
         String email = jwtUtil.extractUsername(request.getRefreshToken());
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         String newToken = jwtUtil.generateToken(email,userDetails.getAuthorities());

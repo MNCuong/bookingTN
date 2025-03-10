@@ -12,7 +12,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 
 @AllArgsConstructor
 @RestController
@@ -20,17 +19,17 @@ import java.time.LocalDate;
 public class FlightController {
     private final FlightService flightService;
 
-    //    public ResponseEntity<ResponseDto<JsonNode>> searchFlight(@RequestBody SearchFlightRequest request) {
+    //    public ResponseEntity<ResponseDto<JsonNode>> searchFlight(@ModelAttribute SearchFlightRequest request) {
 //        return ResponseConfig.success(flightService.searchFlights(request));
 //    }
 //
 //    @GetMapping("/search-flight-location")
-//    public ResponseEntity<ResponseDto<JsonNode>> searchFlightLocation(@RequestBody SearchFlightLocationRequest request) {
+//    public ResponseEntity<ResponseDto<JsonNode>> searchFlightLocation(@ModelAttribute SearchFlightLocationRequest request) {
 //        return ResponseConfig.success(flightService.searchFlightLocation(request));
 //    }
 //
 //    @GetMapping("/get-min-price")
-//    public ResponseEntity<ResponseDto<JsonNode>> getMinPrice(@RequestBody MinPriceRequest request) {
+//    public ResponseEntity<ResponseDto<JsonNode>> getMinPrice(@ModelAttribute MinPriceRequest request) {
 //        return ResponseConfig.success(flightService.getMinPrice(request));
 //    }
     @GetMapping("/search-flight")
@@ -39,7 +38,6 @@ public class FlightController {
         {
             String result = flightService.searchFlights(dep, arr);
             Object jsonData = flightService.convertToJson(result);
-
             return ResponseConfig.success(jsonData);
         }
     }

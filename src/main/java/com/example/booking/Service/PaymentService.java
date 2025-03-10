@@ -10,4 +10,5 @@ public interface PaymentService {
     boolean verifySignature(Map<String, String> params, String secureHash);
     String saveTransaction(Map<String, String> params);
     void saveTran(Map<String, String> params);
+    String getPayKafka(PayRequest payRequest);
 }

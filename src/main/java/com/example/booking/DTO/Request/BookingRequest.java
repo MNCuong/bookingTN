@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Data
 public class BookingRequest {
-    private Long roomId;
+    private long roomId;
     private LocalDate checkIn;
     private LocalDate checkOut;
     private BigDecimal totalPrice;
