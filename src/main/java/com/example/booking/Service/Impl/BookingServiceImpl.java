@@ -63,6 +63,7 @@ public class BookingServiceImpl implements BookingService {
         }
         long daysBetween = ChronoUnit.DAYS.between(bookingRequest.getCheckIn(), bookingRequest.getCheckOut());
         Double totalPriceRaw = daysBetween * room.getPrice();
+        log.info("totalPriceRaw:{}",totalPriceRaw);
         Booking booking = Booking.builder()
                 .user(user)
                 .checkIn(bookingRequest.getCheckIn())
@@ -76,15 +77,18 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getStatus().equals(BookingStatusEnums.PENDING.toString())) {
             booking.setStatus(BookingStatusEnums.FAILED.toString());
         }
+        log.info("amountBookingServiceImpl1:{}",bookingRequest.getTotalPrice());
+
         bookingSave = bookingRepository.save(booking);
 //        redisService.saveBookingAndUser(bookingSave.getId() +
 //                "", bookingSave.getUser().getId().toString());
         BookingEvent bookingEvent = BookingEvent.builder()
                 .bookingId(bookingSave.getId())
                 .userEmail(bookingSave.getUser().getEmail())
-                .totalPrice(bookingSave.getTotalPrice())
+                .totalPrice(bookingRequest.getTotalPrice())
                 .typeService(TypeServiceEnum.KS)
                 .build();
+        log.info("amountBookingServiceImpl1:{}",bookingEvent.getTotalPrice());
         kafkaTemplate.send("booking_topic", bookingEvent);
         return bookingMapper.toBookingResponse(bookingSave);
     }
