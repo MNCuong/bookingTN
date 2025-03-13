@@ -15,6 +15,9 @@ public interface FlightService {
 //    List<FlightResponse> getFlights(String lat, String lon);
 
     String searchFlights(String depIata, String arrIata);
+
     Object convertToJson(String jsonString);
+
+//    int getAvailableSeats(String flightCode);
 
 }

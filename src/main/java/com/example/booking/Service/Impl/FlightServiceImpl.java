@@ -6,6 +6,7 @@ import com.example.booking.DTO.Request.FlightRequestPackage.MinPriceRequest;
 import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightLocationRequest;
 import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightRequest;
 import com.example.booking.Exception.BookingException;
+import com.example.booking.Repository.FlightRepository;
 import com.example.booking.Service.FlightService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +32,8 @@ public class FlightServiceImpl implements FlightService {
     @Autowired
     private MessageCommon messageCommon;
     private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private FlightRepository flightRepository;
 
 
     @Override
@@ -55,4 +58,10 @@ public class FlightServiceImpl implements FlightService {
             return null;
         }
     }
+
+//    @Override
+//    public int getAvailableSeats(String flightCode) {
+//        int bookedSeats = flightRepository.countByFlightCodeAndStatus(flightCode, "CONFIRMED");
+//        return MAX_SEATS - bookedSeats;
+//    }
 }

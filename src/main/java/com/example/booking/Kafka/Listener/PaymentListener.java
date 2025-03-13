@@ -28,7 +28,6 @@ public class PaymentListener {
                 .typeService(event.getTypeService())
                 .userEmail(event.getUserEmail())
                 .build();
-        log.info("amountPaymentListener:{}",event.getTotalPrice());
 
         // Gọi API thanh toán VNPAY
         String paymentUrl = paymentService.getPayKafka(payRequest);
