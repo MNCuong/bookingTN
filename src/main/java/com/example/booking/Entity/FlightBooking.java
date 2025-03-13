@@ -2,7 +2,9 @@ package com.example.booking.Entity;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import lombok.*;
 
@@ -16,12 +18,15 @@ public class FlightBooking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String idBooking;
     @ManyToOne
     private User user;
-    @ManyToOne
-    private Flight flight;
-    private int seat_number;
+    private String flightCode;
+    private String seatNumber;
     private BigDecimal totalPrice;
     private String status;
+    private LocalDate flightDate;
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalTime departureTime;
+    private LocalTime arrivalTime;
 }

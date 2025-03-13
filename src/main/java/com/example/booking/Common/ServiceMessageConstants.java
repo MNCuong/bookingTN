@@ -27,6 +27,8 @@ public class ServiceMessageConstants {
     public static final String DEPARTURE_NOT_EMPTY = "ER-021";
     public static final String FROM_LOCATION_NOT_EMPTY = "ER-022";
     public static final String TO_LOCATION_NOT_EMPTY = "ER-023";
+    public static final String NOT_ENOUGH_SEAT = "ER-024";
+    public static final String SEAT_ALREADY_BOOKED = "ER-025";
 
     public ServiceMessageConstants (){}
 }

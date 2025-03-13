@@ -263,7 +263,7 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getVnp_ReturnUrl());
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
-        log.info("amountPaymentListener:{}",payRequest.getAmount_raw());
+        log.info("amountPaymentListener:{}", payRequest.getAmount_raw());
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("ETC/GMT+7"));
@@ -295,7 +295,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
         String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hashData.toString());
         query.append("&vnp_SecureHash=").append(vnp_SecureHash);
-        log.info("URLpayment:{}",vnPayConfig.getVnp_PayUrl() + "?" + query.toString());
+        log.info("URLpayment:{}", vnPayConfig.getVnp_PayUrl() + "?" + query.toString());
         return vnPayConfig.getVnp_PayUrl() + "?" + query.toString();
     }
 }

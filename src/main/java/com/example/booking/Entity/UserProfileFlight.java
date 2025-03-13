@@ -24,6 +24,9 @@ public class UserProfileFlight {
     private LocalDate dateOfBirth; // Ngày sinh
     private String gender; // Giới tính
     private String nationality; // Quốc tịch
-    private String nationalityCode; // Mã quốc tịch
+    private String nationalityCode;
+    private String personalCode;
+    private String seatNumber;  // Ghế ngồi của hành khách
+    private String ticketType;// Mã quốc tịch
 }
 
