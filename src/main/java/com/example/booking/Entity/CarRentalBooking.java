@@ -17,6 +17,7 @@ public class CarRentalBooking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String bookingId;
     @ManyToOne
     private User user;
     @ManyToOne

@@ -57,8 +57,8 @@ public class CarRentalBookingsServiceImpl implements CarRentalBookingsService {
     }
 
     @Override
-    public CarRentalBooking findById(long id) {
-        return carRentalBookingsRepository.findById(id).orElse(null);
+    public CarRentalBooking findByBookingId(String id) {
+        return carRentalBookingsRepository.findByBookingId(id);
     }
 
     @Override

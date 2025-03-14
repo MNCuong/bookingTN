@@ -18,7 +18,7 @@ public class FlightBooking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String idBooking;
+    private String bookingId;
     @ManyToOne
     private User user;
     private String flightCode;

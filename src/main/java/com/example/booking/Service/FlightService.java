@@ -1,12 +1,5 @@
 package com.example.booking.Service;
 
-import com.example.booking.DTO.Request.FlightRequestPackage.MinPriceRequest;
-import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightLocationRequest;
-import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightRequest;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import java.time.LocalDate;
-
 
 public interface FlightService {
     //    Flight findById(Long id);

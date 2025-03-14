@@ -1,6 +1,7 @@
 package com.example.booking.Config;
 
 import com.example.booking.DTO.Event.BookingEvent;
+import com.example.booking.DTO.Event.FlightBookingEvent;
 import com.example.booking.DTO.Request.EmailRequest;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -45,5 +46,18 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, BookingEvent> bookingKafkaTemplate() {
         return new KafkaTemplate<>(bookingProducerFactory());
+    }
+    @Bean
+    public ProducerFactory<String, FlightBookingEvent> flightBookingProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, FlightBookingEvent> flightBookingKafkaTemplate() {
+        return new KafkaTemplate<>(flightBookingProducerFactory());
     }
 }

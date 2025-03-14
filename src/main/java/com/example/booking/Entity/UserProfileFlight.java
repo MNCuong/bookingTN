@@ -1,6 +1,7 @@
 package com.example.booking.Entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,6 +28,8 @@ public class UserProfileFlight {
     private String nationalityCode;
     private String personalCode;
     private String seatNumber;  // Ghế ngồi của hành khách
-    private String ticketType;// Mã quốc tịch
+    private String ticketType;
+    @NotNull(message = "Trường 'child' không được để trống!")
+    private Boolean child;
 }
 
