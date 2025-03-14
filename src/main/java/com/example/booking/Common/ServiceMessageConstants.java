@@ -20,15 +20,16 @@ public class ServiceMessageConstants {
     public static final String THIS_TIME_HAS_BEEN_BOOKED = "ER-014";
     public static final String TRANS_EXIST = "ER-015";
     public static final String USER_HAVE_NO_RIGHT = "ER-016";
-    public static final String CAR_NOT_FOUND = "ER-017";
-    public static final String ID_INVALID = "ER-018";
+    public static final String DATABASE_ERROR = "ER-017";
+    public static final String INVALID_TOKEN = "ER-018";
     public static final String PAYMENT_FAILED = "ER-019";
-    public static final String QUERY_INVALID = "ER-020";
+    public static final String INVALID_TOKEN_USER = "ER-020";
     public static final String DEPARTURE_NOT_EMPTY = "ER-021";
-    public static final String FROM_LOCATION_NOT_EMPTY = "ER-022";
+    public static final String DIVISION_BY_ZERO = "ER-022";
     public static final String TO_LOCATION_NOT_EMPTY = "ER-023";
     public static final String NOT_ENOUGH_SEAT = "ER-024";
     public static final String SEAT_ALREADY_BOOKED = "ER-025";
+    public static final String CHILD_ONLY_RECEIVES_TRUE_OR_FALSE = "ER-026";
 
     public ServiceMessageConstants (){}
 }

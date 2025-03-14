@@ -162,7 +162,7 @@ public class PaymentServiceImpl implements PaymentService {
                 String type = typeBooking.trim();
                 if ("00".equals(responseCode)) {
                     if (type.equals(TypeServiceEnum.CAR.toString())) {
-                        CarRentalBooking carRentalBooking = carRentalBookingsService.findById(Long.parseLong(bookingId));
+                        CarRentalBooking carRentalBooking = carRentalBookingsService.findByBookingId(bookingId);
                         carRentalBooking.setStatus(StatusEnum.CONFIRMED.toString());
                         carRentalBookingsService.save(carRentalBooking);
                         CarRental car = carService.findById(carRentalBooking.getCar().getId());
@@ -170,14 +170,14 @@ public class PaymentServiceImpl implements PaymentService {
                         carService.save(car);
 
                     } else if (type.equals(TypeServiceEnum.KS.toString())) {
-                        Booking booking = bookingService.findById(Long.parseLong(bookingId));
+                        Booking booking = bookingService.findByBookingId(bookingId);
                         booking.setStatus(StatusEnum.CONFIRMED.toString());
                         bookingService.save(booking);
                         Room room = roomService.findById(booking.getRoom().getId());
                         room.setState(RoomStateEnums.BOOKED.toString());
                         roomService.save(room);
-                    } else if (type.equals(TypeServiceEnum.PLANE.toString())) {
-                        FlightBooking flightBooking = flightBookingService.findById(Long.parseLong(bookingId));
+                    } else if (type.equals(TypeServiceEnum.FLIGHT.toString())) {
+                        FlightBooking flightBooking = flightBookingService.findByBookingId(bookingId);
 //                        flightBooking.setStatus(StatusEnum.CONFIRMED.toString());
 //                        flightBookingService.save(flightBooking);
 //                        Flight flight = flightService.findById(flightBooking.getFlight().getId());
@@ -188,15 +188,15 @@ public class PaymentServiceImpl implements PaymentService {
                     return "Success";
                 } else {
                     if (typeBooking.equals(TypeServiceEnum.CAR.toString())) {
-                        CarRentalBooking carRentalBooking = carRentalBookingsService.findById(Long.parseLong(bookingId));
+                        CarRentalBooking carRentalBooking = carRentalBookingsService.findByBookingId(bookingId);
                         carRentalBooking.setStatus(StatusEnum.FAILED.toString());
                         carRentalBookingsService.save(carRentalBooking);
                     } else if (typeBooking.equals(TypeServiceEnum.KS.toString())) {
-                        Booking booking = bookingService.findById(Long.parseLong(bookingId));
+                        Booking booking = bookingService.findByBookingId(bookingId);
                         booking.setStatus(StatusEnum.FAILED.toString());
                         bookingService.save(booking);
-                    } else if (typeBooking.equals(TypeServiceEnum.PLANE.toString())) {
-                        FlightBooking flightBooking = flightBookingService.findById(Long.parseLong(bookingId));
+                    } else if (typeBooking.equals(TypeServiceEnum.FLIGHT.toString())) {
+                        FlightBooking flightBooking = flightBookingService.findByBookingId(bookingId);
                         flightBooking.setStatus(StatusEnum.FAILED.toString());
                         flightBookingService.save(flightBooking);
                     }

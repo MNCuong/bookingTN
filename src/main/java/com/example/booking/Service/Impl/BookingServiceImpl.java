@@ -1,6 +1,7 @@
 package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
+import com.example.booking.Common.ServiceCommon;
 import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.DTO.Event.BookingEvent;
 import com.example.booking.DTO.Request.BookingRequest;
@@ -45,7 +46,7 @@ public class BookingServiceImpl implements BookingService {
     //    private final PaymentService paymentService;
 //    private final RedisService redisService;
     private final KafkaTemplate<String, BookingEvent> kafkaTemplate;
-
+    private final ServiceCommon serviceCommon;
 
     @Transactional
     @Override
@@ -64,8 +65,10 @@ public class BookingServiceImpl implements BookingService {
         long daysBetween = ChronoUnit.DAYS.between(bookingRequest.getCheckIn(), bookingRequest.getCheckOut());
         Double totalPriceRaw = daysBetween * room.getPrice();
         log.info("totalPriceRaw:{}", totalPriceRaw);
+        String bookingId = serviceCommon.generateBookingId();
         Booking booking = Booking.builder()
                 .user(user)
+                .bookingId(bookingId)
                 .checkIn(bookingRequest.getCheckIn())
                 .checkOut(bookingRequest.getCheckOut())
                 .status(BookingStatusEnums.PENDING.toString())
@@ -82,7 +85,7 @@ public class BookingServiceImpl implements BookingService {
 //        redisService.saveBookingAndUser(bookingSave.getId() +
 //                "", bookingSave.getUser().getId().toString());
         BookingEvent bookingEvent = BookingEvent.builder()
-                .bookingId(bookingSave.getId())
+                .bookingId(bookingSave.getBookingId())
                 .userEmail(bookingSave.getUser().getEmail())
                 .totalPrice(bookingRequest.getTotalPrice())
                 .typeService(TypeServiceEnum.KS)
@@ -94,6 +97,11 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking findById(long id) {
         return bookingRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Booking findByBookingId(String bookingId) {
+        return bookingRepository.findByBookingId(bookingId);
     }
 
     @Override

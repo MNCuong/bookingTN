@@ -1,14 +1,8 @@
 package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
-import com.example.booking.Common.ServiceMessageConstants;
-import com.example.booking.DTO.Request.FlightRequestPackage.MinPriceRequest;
-import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightLocationRequest;
-import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightRequest;
-import com.example.booking.Exception.BookingException;
 import com.example.booking.Repository.FlightRepository;
 import com.example.booking.Service.FlightService;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +11,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
 import java.util.Map;
 
 

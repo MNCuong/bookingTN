@@ -8,5 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface BookingService {
     BookingResponse booking(BookingRequest bookingRequest, HttpServletRequest httpServletRequest);
     Booking findById(long id);
+    Booking findByBookingId(String bookingId);
     void save(Booking booking);
 }

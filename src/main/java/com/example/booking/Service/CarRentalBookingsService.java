@@ -6,6 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface CarRentalBookingsService {
     CarRentalBooking bookingCar(CarRentalBookingsRequest carRentalBookingsRequest, HttpServletRequest request);
-    CarRentalBooking findById(long id);
+    CarRentalBooking findByBookingId(String id);
     void save(CarRentalBooking carRentalBooking);
 }

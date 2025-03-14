@@ -27,4 +27,5 @@ public interface FlightBookingRepository extends JpaRepository<FlightBooking, Lo
     );
 
 
+    FlightBooking findByBookingId(String id);
 }

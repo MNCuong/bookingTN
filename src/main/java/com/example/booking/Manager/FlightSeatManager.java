@@ -13,7 +13,6 @@ public class FlightSeatManager {
     private final ConcurrentHashMap<String, Integer> bookedSeats = new ConcurrentHashMap<>();
 
     private String generateKey(String flightCode, LocalDate flightDate, LocalTime departureTime, LocalTime arrivalTime) {
-        log.info("key:{}",flightCode + "_" + flightDate.toString());
         return flightCode + "_" + flightDate.toString()+"_"+departureTime.toString()+"_"+arrivalTime.toString();
 
     }

@@ -17,4 +17,6 @@ public interface CarRentalBookingsRepository extends JpaRepository<CarRentalBook
     long countOverlappingBookingCar(@Param("carId") long carId,
                                   @Param("startDate") LocalDate startDate,
                                   @Param("endDate") LocalDate endDate);
+
+    CarRentalBooking findByBookingId(String id);
 }

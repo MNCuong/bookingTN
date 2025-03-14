@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 public class PayRequest {
     BigDecimal amount_raw;
     String bankCode;
-    long bookingId;
+    String bookingId;
     TypeServiceEnum typeService;
     String userEmail;
 }
