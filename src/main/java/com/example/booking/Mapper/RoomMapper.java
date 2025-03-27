@@ -10,7 +10,6 @@ import org.mapstruct.ReportingPolicy;
 import java.util.List;
 
 
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface RoomMapper {
     RoomResponse toRoom(long hotelId,Room room);
     List<RoomResponse2> toRooms(List<Room> rooms);

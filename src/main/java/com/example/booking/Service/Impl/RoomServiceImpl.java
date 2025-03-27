@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +41,8 @@ public class RoomServiceImpl implements RoomService {
 
     @Transactional
     @Override
-    public RoomResponse addRoom(Long hotelId, double price, String type, int capacity, boolean availability, List<MultipartFile> imgs) {
-        if (price == 0) {
+    public RoomResponse addRoom(Long hotelId, BigDecimal price, String type, int capacity, boolean availability, List<MultipartFile> imgs) {
+        if (price== null) {
             throw new BookingException(ServiceMessageConstants.PRICE_INVALID, messageCommon.getMessage(ServiceMessageConstants.PRICE_INVALID));
         }
         Hotel hotel = hotelService.getHotelById(hotelId);

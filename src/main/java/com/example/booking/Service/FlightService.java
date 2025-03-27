@@ -1,23 +1,17 @@
 package com.example.booking.Service;
 
-import com.example.booking.DTO.Request.FlightRequestPackage.MinPriceRequest;
-import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightLocationRequest;
-import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightRequest;
-import com.fasterxml.jackson.databind.JsonNode;
 
-import java.time.LocalDate;
+import com.example.booking.DTO.Request.FlightRequestPackage.FlightRequest;
+import com.example.booking.DTO.Response.FlightResponse;
 
+import java.util.List;
 
 public interface FlightService {
-    //    Flight findById(Long id);
-//    void save(Flight flight);
-//    FlightResponse addFlight(FlightRequest flightRequest);
-//    List<FlightResponse> getFlights(String lat, String lon);
 
-    String searchFlights(String depIata, String arrIata);
 
-    Object convertToJson(String jsonString);
-
-//    int getAvailableSeats(String flightCode);
+    FlightResponse createFlight(FlightRequest flightRequest);
+    List<FlightResponse> getAllFlights();
+    List<FlightResponse> searchFlight(String arrival,String departure);
+    FlightResponse getFlightById(Long id);
 
 }
