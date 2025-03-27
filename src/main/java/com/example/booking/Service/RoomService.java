@@ -5,10 +5,11 @@ import com.example.booking.DTO.Response.RoomResponse2;
 import com.example.booking.Entity.Room;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface RoomService {
-    RoomResponse addRoom(Long hotelId, double price, String type, int capacity, boolean availability, List<MultipartFile> imgs);
+    RoomResponse addRoom(Long hotelId, BigDecimal price, String type, int capacity, boolean availability, List<MultipartFile> imgs);
 
     RoomResponse roomDetail(Long id);
 

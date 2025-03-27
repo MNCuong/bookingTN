@@ -6,6 +6,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,7 +18,7 @@ public class RoomDocument {
     private String id;
 
     @Field(type = FieldType.Double)
-    private Double price;
+    private BigDecimal price;
 
     @Field(type = FieldType.Keyword)
     private String type;

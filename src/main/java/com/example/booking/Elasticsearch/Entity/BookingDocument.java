@@ -6,6 +6,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -31,7 +32,7 @@ public class BookingDocument {
     private LocalDate checkOut;
 
     @Field(type = FieldType.Double)
-    private Double totalPrice;
+    private BigDecimal totalPrice;
 
     @Field(type = FieldType.Keyword)
     private String status;

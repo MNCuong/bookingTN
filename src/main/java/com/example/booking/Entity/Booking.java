@@ -23,7 +23,7 @@ public class Booking {
     private Room room;
     private LocalDate checkIn;
     private LocalDate checkOut;
-    private Double totalPrice;
+    private BigDecimal totalPrice;
     private String status;
     private LocalDateTime createdAt = LocalDateTime.now();
 

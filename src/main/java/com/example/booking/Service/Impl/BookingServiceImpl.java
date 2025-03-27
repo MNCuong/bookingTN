@@ -62,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
                     messageCommon.getMessage(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED));
         }
         long daysBetween = ChronoUnit.DAYS.between(bookingRequest.getCheckIn(), bookingRequest.getCheckOut());
-        Double totalPriceRaw = daysBetween * room.getPrice();
+        BigDecimal totalPriceRaw = room.getPrice().multiply( BigDecimal.valueOf(daysBetween));
         log.info("totalPriceRaw:{}", totalPriceRaw);
         Booking booking = Booking.builder()
                 .user(user)

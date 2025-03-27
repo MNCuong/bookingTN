@@ -32,7 +32,7 @@ public class RoomController {
     @PostMapping("/add-room")
     public ResponseEntity<ResponseDto<RoomResponse>> addRoom(
             @RequestParam("hotelId") Long hotelId,
-            @RequestParam("price") Double price,
+            @RequestParam("price") BigDecimal price,
             @RequestParam("type") String type,
             @RequestParam("capacity") int capacity,
             @RequestParam("availability") boolean availability,

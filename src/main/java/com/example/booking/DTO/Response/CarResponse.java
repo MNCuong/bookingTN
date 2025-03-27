@@ -3,9 +3,11 @@ package com.example.booking.DTO.Response;
 import com.example.booking.Enum.CarStatus;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+@Builder
 @Data
 public class CarResponse {
     private String brand;
