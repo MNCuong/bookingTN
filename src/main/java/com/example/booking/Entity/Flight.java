@@ -1,5 +1,6 @@
 package com.example.booking.Entity;
 
+import com.example.booking.Enum.FlightStateEnum;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -18,7 +19,9 @@ public class Flight {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDateTime flightDate;
-    private String flightStatus;
+    @Enumerated(EnumType.STRING)
+    private FlightStateEnum flightStatus;
+
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "departure_id")
@@ -30,7 +33,7 @@ public class Flight {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "Airlines_id")
-    private Airlines Airlines;
+    private Airlines airlines;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "flight_details_id")

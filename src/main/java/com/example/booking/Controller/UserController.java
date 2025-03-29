@@ -2,6 +2,7 @@ package com.example.booking.Controller;
 
 import com.example.booking.Config.ResponseConfig;
 import com.example.booking.Config.ResponseDto;
+import com.example.booking.DTO.Request.FlightRequestPackage.RegisterFlightRequest;
 import com.example.booking.DTO.Request.RegisterRequest;
 import com.example.booking.DTO.Response.UserResponse;
 import com.example.booking.Service.UserService;
@@ -27,5 +28,8 @@ public class UserController {
 
     }
 
-
+    @PostMapping("/register-airline")
+    public ResponseEntity<ResponseDto<UserResponse>> registerAirline(@ModelAttribute RegisterFlightRequest registerFlightRequest) {
+        return ResponseConfig.success(userService.registerAirline(registerFlightRequest));
+    }
 }

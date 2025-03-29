@@ -9,6 +9,7 @@ import com.example.booking.Entity.Aircraft;
 import com.example.booking.Service.AircraftService;
 import com.example.booking.Service.FlightService;
 import com.example.booking.Utils.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +29,11 @@ public class AircraftController {
         return ResponseConfig.success(aircraftService.addAircraft(aircraftRequest));
     }
 
-    @GetMapping("/list-aircraft")
-    public ResponseEntity<ResponseDto<List<AircraftResponse>>> listAircraft(@RequestParam Long idAirline) {
-        return ResponseConfig.success(aircraftService.getListAircraft(idAirline));
+    @GetMapping("/list-aircraft-by-airline")
+    public ResponseEntity<ResponseDto<List<AircraftResponse>>> listAircraft(HttpServletRequest request) {
+        return ResponseConfig.success(aircraftService.getListAircraft(request));
     }
+
+
 
 }

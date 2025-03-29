@@ -6,11 +6,15 @@ import com.example.booking.DTO.Request.FlightRequestPackage.AircraftRequest;
 import com.example.booking.DTO.Response.AircraftResponse;
 import com.example.booking.Entity.Aircraft;
 import com.example.booking.Entity.Airlines;
+import com.example.booking.Entity.User;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Mapper.AircraftMapper;
 import com.example.booking.Repository.AircraftRepository;
 import com.example.booking.Service.AircraftService;
 import com.example.booking.Service.AirlinesService;
+import com.example.booking.Service.UserService;
+import com.example.booking.Utils.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +27,8 @@ public class AircraftServiceImpl implements AircraftService {
     private final AirlinesService airlinesService;
     private final AircraftMapper aircraftMapper;
     private final MessageCommon messageCommon;
+    private final JwtUtil jwtUtil;
+    private final UserService userService;
 
     @Override
     public Aircraft findById(Long id) {
@@ -47,7 +53,12 @@ public class AircraftServiceImpl implements AircraftService {
     }
 
     @Override
-    public List<AircraftResponse> getListAircraft(Long id) {
-        return aircraftRepository.getByAirlines_Id(id);
+    public List<AircraftResponse> getListAircraft(HttpServletRequest request) {
+        String tokenS = JwtUtil.getTokenFromRequest(request);
+        String email = jwtUtil.extractUsername(tokenS);
+        User user = userService.findUserByEmail(email);
+        String nameAirline = user.getFullName().substring(user.getFullName().indexOf("_") + 1);
+        Airlines airlines = airlinesService.findByName(nameAirline);
+        return aircraftRepository.findByAirlines((airlines));
     }
 }

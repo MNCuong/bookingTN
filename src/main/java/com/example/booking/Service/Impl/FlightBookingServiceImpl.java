@@ -9,7 +9,7 @@ import com.example.booking.Entity.FlightBooking;
 import com.example.booking.Entity.User;
 import com.example.booking.Entity.UserProfileFlight;
 import com.example.booking.Enum.AircraftTypeEnums;
-import com.example.booking.Enum.FlightStateEnum;
+import com.example.booking.Enum.FlightBookingStateEnum;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Manager.FlightSeatManager;
 import com.example.booking.Repository.FlightBookingRepository;
@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -143,7 +142,7 @@ public class FlightBookingServiceImpl implements FlightBookingService {
                     .totalPrice(flightBookingRequest.getTotalPrice().divide(BigDecimal.valueOf(flightBookingRequest.getSeatTotal())))
                     .departureTime(departureTime)
                     .arrivalTime(arrivalTime)
-                    .status(FlightStateEnum.PENDING.toString())
+                    .status(FlightBookingStateEnum.PENDING.toString())
                     .build());
 
             bookings.add(booking);
@@ -154,7 +153,7 @@ public class FlightBookingServiceImpl implements FlightBookingService {
         return FlightBookingResponse.builder()
                 .flightBookingId(bookingId)
                 .message("Đặt vé thành công!")
-                .status(FlightStateEnum.PENDING.toString())
+                .status(FlightBookingStateEnum.PENDING.toString())
                 .build();
     }
 

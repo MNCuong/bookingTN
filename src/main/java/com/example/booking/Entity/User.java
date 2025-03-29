@@ -31,4 +31,13 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference
     private UserProfile userProfile;
+    /**
+     *danh sách đối tượng , loại sẽ đứng trước fullname của mỗi tài khoản
+     *
+     *
+     * @param hotel khách sạn
+     * @param flight chuyến bay
+     * @param hotel khách hàng
+     *
+     */
 }

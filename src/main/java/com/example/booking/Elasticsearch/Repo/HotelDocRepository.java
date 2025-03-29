@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface HotelDocRepository extends ElasticsearchRepository<HotelDocument, String> {
-    List<HotelDocument> findByCity(String city); // Tìm theo thành phố
+    List<HotelDocument> findByCity(String city);
 }

@@ -5,6 +5,7 @@ import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.DTO.Request.FlightRequestPackage.MinPriceRequest;
 import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightLocationRequest;
 import com.example.booking.DTO.Request.FlightRequestPackage.SearchFlightRequest;
+import com.example.booking.Enum.FlightStateEnum;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.DTO.Request.FlightRequestPackage.FlightRequest;
@@ -14,10 +15,12 @@ import com.example.booking.Exception.BookingException;
 import com.example.booking.Mapper.FlightMapper;
 import com.example.booking.Repository.FlightRepository;
 import com.example.booking.Service.FlightService;
+import com.example.booking.Utils.JwtUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.booking.Service.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,6 +50,8 @@ public class FlightServiceImpl implements FlightService {
     private final CodeSharedFlightService codeSharedFlightService;
     private final AirPortInfoService airPortInfoService;
     private final FlightMapper flightMapper;
+    private final JwtUtil jwtUtil;
+    private final UserService userService;
 
 
     //    @Override
@@ -93,7 +98,7 @@ public class FlightServiceImpl implements FlightService {
         if (flightRequest.getDeparture_id() == null || flightRequest.getDeparture_id() == 0) {
             throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
         }
-        if (flightRequest.getFight_date() == null || flightRequest.getFlight_status() == null || flightRequest.getFlight_status().isEmpty()) {
+        if (flightRequest.getFight_date() == null || flightRequest.getFlight_status() == null) {
             throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
         }
 
@@ -115,7 +120,7 @@ public class FlightServiceImpl implements FlightService {
                 .flightStatus(flightRequest.getFlight_status())
                 .arrival(arrival)
                 .departure(departure)
-                .Airlines(airlines)
+                .airlines(airlines)
                 .build();
         return flightMapper.toFlightResponse(flightRepository.save(flight));
     }
@@ -142,6 +147,30 @@ public class FlightServiceImpl implements FlightService {
         return flightMapper.toFlightResponse(flight);
     }
 
+    @Override
+    public List<FlightResponse> getFlightByStatus(String status) {
+        if (status == null || status.isEmpty() || status.equals("0")) {
+            return flightMapper.toFlightResponseList(flightRepository.findAll());
+        }
+        return flightMapper.toFlightResponseList(flightRepository.findByFlightStatus(status));
+    }
+
+    @Override
+    public String updateStatusFlight(Long id, FlightStateEnum status) {
+        if (id == null || id == 0) {
+            throw new BookingException(ServiceMessageConstants.FLIGHT_NOT_FOUND, messageCommon.getMessage(ServiceMessageConstants.FLIGHT_NOT_FOUND));
+        }
+        Flight flight = flightRepository.findById(id).orElse(null);
+        assert flight != null;
+        if (!flight.getFlightStatus().canTransitionTo(status)) {
+            throw new BookingException(ServiceMessageConstants.NOT_UPDATE_STATE_FLIGHT, messageCommon.getMessage(ServiceMessageConstants.NOT_UPDATE_STATE_FLIGHT));
+
+        }
+        flight.setFlightStatus(status);
+        flightRepository.save(flight);
+        return "update flight state success";
+
+    }
 //    @Override
 //    public int getAvailableSeats(String flightCode) {
 //        int bookedSeats = flightRepository.countByFlightCodeAndStatus(flightCode, "CONFIRMED");

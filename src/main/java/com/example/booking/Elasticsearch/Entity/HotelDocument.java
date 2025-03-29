@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @Builder
-@Document(indexName = "hotels") // Chỉ dùng cho Elasticsearch
+@Document(indexName = "hotels")
 public class HotelDocument {
     @Id
     private Long id;

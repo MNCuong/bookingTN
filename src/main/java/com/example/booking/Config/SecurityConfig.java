@@ -49,6 +49,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/user/register").permitAll()
+                        .requestMatchers("/api/v1/user/register-hotel").permitAll()
+                        .requestMatchers("/api/v1/user/register-airline").permitAll()
                         .requestMatchers("/bookingBE-MNC/api/hotels/**").permitAll()
                         .requestMatchers("/api/chatbot/**").permitAll()
                         .requestMatchers("/api/sync/**").permitAll()
