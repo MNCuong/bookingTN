@@ -2,6 +2,7 @@ package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
 import com.example.booking.Common.ServiceMessageConstants;
+import com.example.booking.DTO.Request.FlightRequestPackage.RegisterFlightRequest;
 import com.example.booking.DTO.Request.RegisterRequest;
 import com.example.booking.DTO.Response.UserResponse;
 import com.example.booking.Entity.User;
@@ -48,7 +49,7 @@ public class UserServiceImpl implements UserService {
                 .phone(registerRequest.getPhone_number())
                 .email(registerRequest.getEmail())
                 .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
-                .fullName(registerRequest.getFull_name())
+                .fullName("CUS_" + registerRequest.getFull_name())
                 .createdAt(LocalDateTime.now())
                 .verified(false)
                 .roles("USER")
@@ -75,7 +76,7 @@ public class UserServiceImpl implements UserService {
                 .phone(registerRequest.getPhone_number())
                 .email(registerRequest.getEmail())
                 .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
-                .fullName(registerRequest.getFull_name())
+                .fullName("HOTEL_" + registerRequest.getFull_name())
                 .createdAt(LocalDateTime.now())
                 .verified(false)
                 .roles("ADMIN")
@@ -91,8 +92,39 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public UserResponse registerAirline(RegisterFlightRequest registerFlightRequest) {
+        if (userRepository.existsByEmail(registerFlightRequest.getEmail())) {
+            throw new BookingException(ServiceMessageConstants.EMAIL_EXIST, messageCommon.getMessage(ServiceMessageConstants.EMAIL_EXIST));
+        }
+        if (userRepository.existsByPhone(registerFlightRequest.getPhone_number())) {
+            throw new BookingException(ServiceMessageConstants.PHONE_EXIST, messageCommon.getMessage(ServiceMessageConstants.PHONE_EXIST));
+        } if (userRepository.existsByFullName(registerFlightRequest.getFull_name())) {
+            throw new BookingException(ServiceMessageConstants.FULLNAME_AIRLINE_EXIST, messageCommon.getMessage(ServiceMessageConstants.FULLNAME_AIRLINE_EXIST));
+        }
+
+        User savedUser = userRepository.save(User.builder()
+                .phone(registerFlightRequest.getPhone_number())
+                .email(registerFlightRequest.getEmail())
+                .passwordHash(passwordEncoder.encode(registerFlightRequest.getPassword()))
+                .fullName("AIRLINE_" + registerFlightRequest.getFull_name())
+                .createdAt(LocalDateTime.now())
+                .verified(false)
+                .roles("ADMIN")
+                .build());
+        emailService.sendVerificationEmail(savedUser);
+
+        return UserResponse.builder()
+                .phone_number(registerFlightRequest.getPhone_number())
+                .email(registerFlightRequest.getEmail())
+                .full_name(registerFlightRequest.getFull_name())
+                .created_at(savedUser.getCreatedAt())
+                .role(savedUser.getRoles())
+                .build();
+    }
+
     public boolean verifyUser(String token) {
-        log.info("token-----------------------: " +token);
+        log.info("token-----------------------: " + token);
 
         Optional<User> user = userRepository.findByVerificationToken(token);
         if (user.isPresent()) {
@@ -139,7 +171,7 @@ public class UserServiceImpl implements UserService {
         List<String> unverifiedUserIds = getUnverifiedUserIds();
         for (String userId : unverifiedUserIds) {
             if (!verificationService.isTokenValid(userId, "")) {
-                Long idUser= Long.parseLong(userId);// Token hết hạn
+                Long idUser = Long.parseLong(userId);// Token hết hạn
                 userRepository.deleteById(idUser);
             }
         }

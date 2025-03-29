@@ -7,4 +7,5 @@ import java.util.List;
 public interface AirlinesService {
     List<Airlines> findAll();
     Airlines findById(Long id);
+    Airlines findByName(String name);
 }

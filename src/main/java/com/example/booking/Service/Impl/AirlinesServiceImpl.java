@@ -21,4 +21,9 @@ public class AirlinesServiceImpl implements AirlinesService {
     public Airlines findById(Long id) {
         return repository.findById(id).get();
     }
+
+    @Override
+    public Airlines findByName(String name) {
+        return repository.findByName(name);
+    }
 }

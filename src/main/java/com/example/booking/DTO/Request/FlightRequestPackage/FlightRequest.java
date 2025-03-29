@@ -1,5 +1,6 @@
 package com.example.booking.DTO.Request.FlightRequestPackage;
 
+import com.example.booking.Enum.FlightStateEnum;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,5 +16,5 @@ public class FlightRequest {
     private Long airline_id;
     private Long flight_details_id;
     private Long aircraft_id;
-    private String flight_status;
+    private FlightStateEnum flight_status;
 }
