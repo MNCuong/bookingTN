@@ -1,0 +1,34 @@
+@startuml
+actor Customer
+participant "Login Page" as LoginPage
+participant "Auth Controller" as Controller
+participant "Auth Service" as Service
+participant "User Repository" as Repository
+participant "JWT Utility" as JWT
+
+ACustomer -> LoginPage : Nhập email + mật khẩu
+LoginPage -> Controller : gửi yêu cầu POST /login(email, password)
+Controller -> Service : validateLogin(email, password)
+Service -> Repository : findByEmail(email)
+Repository --> Service : trả về thông tin user (nếu có)
+
+alt Email tồn tại
+    Service -> Service : kiểm tra mật khẩu
+    alt Mật khẩu đúng
+        Service -> JWT : generateAccessToken(user)
+        JWT --> Service : trả về token
+        Service --> Controller : trả về user info + token
+        Controller --> LoginPage : trả về kết quả đăng nhập (thành công)
+        LoginPage --> Customer : Hiển thị giao diện đã đăng nhập
+    else Mật khẩu sai
+        Service --> Controller : trả về lỗi "Sai mật khẩu"
+        Controller --> LoginPage : trả về lỗi
+        LoginPage --> Customer : Hiển thị thông báo lỗi
+    end
+else Email không tồn tại
+    Service --> Controller : trả về lỗi "Email không tồn tại"
+    Controller --> LoginPage : trả về lỗi
+    LoginPage --> Customer : Hiển thị thông báo lỗi
+end
+
+@enduml

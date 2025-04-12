@@ -1,0 +1,21 @@
+@startuml
+|Customer|
+start
+:Truy cập trang tìm chuyến bay;
+|Frontend|
+:Nhập thông tin tìm kiếm;
+:Send request GET /api/flights;
+|Backend|
+:Nhận yêu cầu;
+:Truy vấn dữ liệu chuyến bay;
+if (Có kết quả?) then (Yes)
+  :Trả về danh sách chuyến bay;
+  |Frontend|
+  :Hiển thị kết quả;
+else (No)
+  :Trả về danh sách rỗng;
+  |Frontend|
+  :Hiển thị "Không có chuyến bay";
+endif
+stop
+@enduml

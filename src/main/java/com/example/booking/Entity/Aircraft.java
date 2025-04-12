@@ -1,5 +1,7 @@
 package com.example.booking.Entity;
 
+import com.example.booking.Enum.AircraftStatusEnum;
+import com.example.booking.Enum.AircraftTypeEnums;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +22,12 @@ public class Aircraft {
     private String iata;
     private String icao;
     private String icao24;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private AircraftStatusEnum status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private AircraftTypeEnums type;
     @ManyToOne
     @JoinColumn(name = "airline_id")
     private Airlines airlines;

@@ -1,0 +1,31 @@
+@startuml
+actor Customer
+participant "Frontend (UI)" as UI
+participant "PaymentController" as Controller
+participant "AuthFilter" as Auth
+participant "JWT Utility" as JWT
+participant "PaymentService" as Service
+participant "VNPAY SDK" as VNPAY
+database "Database" as DB
+
+Customer -> UI : Nhấn nút "Thanh toán VNPAY"
+UI -> Controller : POST /api/payments/vnpay (Authorization: Bearer token)
+Controller -> Auth : kiểm tra token
+Auth -> JWT : validateToken(token)
+
+alt Token hợp lệ
+    JWT --> Auth : OK + user info
+    Auth --> Controller : Cho phép tiếp tục
+    Controller -> Service : createVNPAYPayment(userId, orderId)
+    Service -> VNPAY : buildPaymentUrl(orderInfo)
+    VNPAY --> Service : URL thanh toán
+    Service --> Controller : return URL
+    Controller --> UI : 200 OK + redirect URL
+    UI -> Customer : Chuyển hướng sang trang VNPAY
+else Token sai
+    JWT --> Auth : Lỗi xác thực
+    Auth --> Controller : 401 Unauthorized
+    Controller --> UI : 401 Unauthorized
+    UI --> Customer : Hiển thị lỗi đăng nhập
+end
+@enduml

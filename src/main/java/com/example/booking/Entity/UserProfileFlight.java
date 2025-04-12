@@ -28,5 +28,9 @@ public class UserProfileFlight {
     private String personalCode;
     private String seatNumber;  // Ghế ngồi của hành khách
     private String ticketType;// Mã quốc tịch
+    @ManyToOne
+    @JoinColumn(name = "flight_id")
+    private Flight flight;
+
 }
 

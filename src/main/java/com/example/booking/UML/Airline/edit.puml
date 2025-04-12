@@ -1,0 +1,46 @@
+@startuml
+actor Admin
+participant "Frontend (UI)" as UI
+participant "FlightController" as Controller
+participant "AuthFilter" as Auth
+participant "FlightService" as Service
+participant "FlightRepository" as FlightRepo
+participant "JWT Utility" as JWT
+database "Database" as DB
+
+Admin -> UI : Cập nhật thông tin chuyến bay
+UI -> Controller : PUT /api/flights/{id} (Authorization: Bearer token)
+
+Controller -> Auth : kiểm tra token
+Auth -> JWT : validateToken(token)
+
+alt Token hợp lệ
+    JWT --> Auth : OK + user info
+    Auth --> Controller : Cho phép tiếp tục
+
+    Controller -> Service : updateFlight(id, flight)
+    Service -> FlightRepo : findById(id)
+
+    alt Tìm thấy chuyến bay
+        FlightRepo --> Service : flight
+        Service -> FlightRepo : save(updatedFlight)
+        FlightRepo -> DB : update flight ...
+        DB --> FlightRepo : updated flight
+        FlightRepo --> Service : updated flight
+        Service --> Controller : return updated flight
+        Controller --> UI : 200 OK
+        UI --> Admin : Hiển thị thành công
+    else Không tìm thấy chuyến bay
+        FlightRepo --> Service : null
+        Service --> Controller : throw FlightNotFoundException
+        Controller --> UI : 404 Not Found
+        UI --> Admin : Hiển thị lỗi không tìm thấy
+    end
+
+else Token không hợp lệ
+    JWT --> Auth : InvalidTokenException
+    Auth --> Controller : throw UnauthorizedException
+    Controller --> UI : 401 Unauthorized
+    UI --> Admin : Hiển thị lỗi đăng nhập
+end
+@enduml

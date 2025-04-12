@@ -1,12 +1,14 @@
 package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
+import com.example.booking.Common.ServiceCommon;
 import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.DTO.Request.FlightRequestPackage.AircraftRequest;
 import com.example.booking.DTO.Response.AircraftResponse;
 import com.example.booking.Entity.Aircraft;
 import com.example.booking.Entity.Airlines;
 import com.example.booking.Entity.User;
+import com.example.booking.Enum.AircraftTypeEnums;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Mapper.AircraftMapper;
 import com.example.booking.Repository.AircraftRepository;
@@ -17,6 +19,7 @@ import com.example.booking.Utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -48,17 +51,28 @@ public class AircraftServiceImpl implements AircraftService {
         return aircraftMapper.toAircraftResponse(aircraftRepository.save(Aircraft.builder()
                 .iata(request.getIata()).icao24(request.getIcao24())
                 .icao(request.getIcao())
+                .type(request.getTypeEnums())
+                .status(request.getStatus())
                 .airlines(airlines).registration(request.getRegistration())
                 .build()));
     }
 
     @Override
+    public AircraftResponse updateAircraft(Long id, AircraftRequest aircraftRequest) {
+        Aircraft aircraft = aircraftRepository.findById(id).orElse(null);
+        assert aircraft != null;
+        return aircraftMapper.toAircraftResponse(aircraftRepository.save(Aircraft.builder()
+                .iata(aircraft.getIata()).icao24(aircraft.getIcao24())
+                .icao(aircraft.getIcao())
+                .status(aircraft.getStatus())
+                .build()));
+    }
+
+    @Override
     public List<AircraftResponse> getListAircraft(HttpServletRequest request) {
-        String tokenS = JwtUtil.getTokenFromRequest(request);
-        String email = jwtUtil.extractUsername(tokenS);
-        User user = userService.findUserByEmail(email);
-        String nameAirline = user.getFullName().substring(user.getFullName().indexOf("_") + 1);
-        Airlines airlines = airlinesService.findByName(nameAirline);
+        Airlines airlines = ServiceCommon.extractAirline(request, jwtUtil, userService, airlinesService);
         return aircraftRepository.findByAirlines((airlines));
     }
+
+
 }

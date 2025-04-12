@@ -28,11 +28,16 @@ public class AircraftController {
     public ResponseEntity<ResponseDto<AircraftResponse>> addAircraft(@RequestBody AircraftRequest aircraftRequest) {
         return ResponseConfig.success(aircraftService.addAircraft(aircraftRequest));
     }
+    @PutMapping("/update-aircraft/{id}")
+    public ResponseEntity<ResponseDto<AircraftResponse>> updateAircraft(@PathVariable Long id,@RequestBody AircraftRequest aircraftRequest) {
+        return ResponseConfig.success(aircraftService.updateAircraft(id,aircraftRequest));
+    }
 
     @GetMapping("/list-aircraft-by-airline")
     public ResponseEntity<ResponseDto<List<AircraftResponse>>> listAircraft(HttpServletRequest request) {
         return ResponseConfig.success(aircraftService.getListAircraft(request));
     }
+
 
 
 

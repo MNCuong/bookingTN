@@ -1,0 +1,33 @@
+@startuml
+actor Customer
+participant "Frontend (UI)" as UI
+participant "BookingController" as Controller
+participant "AuthFilter" as Auth
+participant "JWT Utility" as JWT
+participant "BookingService" as Service
+participant "BookingRepository" as Repo
+database "Database" as DB
+
+Customer -> UI : Truy cập trang "Vé của tôi"
+UI -> Controller : GET /api/bookings (Authorization: Bearer token)
+Controller -> Auth : kiểm tra token
+Auth -> JWT : validateToken(token)
+
+alt Token hợp lệ
+    JWT --> Auth : OK + user info
+    Auth --> Controller : Cho phép tiếp tục
+    Controller -> Service : getBookingsByUser(userId)
+    Service -> Repo : findByUserId(userId)
+    Repo -> DB : SELECT * FROM bookings WHERE user_id = ?
+    DB --> Repo : danh sách vé
+    Repo --> Service : danh sách vé
+    Service --> Controller : danh sách vé
+    Controller --> UI : 200 OK + danh sách vé
+    UI --> Customer : Hiển thị các vé đã đặt
+else Token sai
+    JWT --> Auth : Lỗi xác thực
+    Auth --> Controller : 401 Unauthorized
+    Controller --> UI : 401 Unauthorized
+    UI --> Customer : Hiển thị lỗi đăng nhập
+end
+@enduml
