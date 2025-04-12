@@ -1,0 +1,16 @@
+@startuml
+actor Admin
+participant "AircraftController" as Controller
+participant "AircraftService" as Service
+participant "AircraftRepository" as Repo
+database "Database" as DB
+
+Admin -> Controller : DELETE /api/aircrafts/{id}
+Controller -> Service : deleteAircraft(id)
+Service -> Repo : existsById(id)
+Repo --> Service : true
+Service -> Repo : deleteById(id)
+Repo --> Service : void
+Service --> Controller : 204 No Content
+Controller --> Admin : OK
+@enduml

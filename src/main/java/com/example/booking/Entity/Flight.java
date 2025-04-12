@@ -19,6 +19,7 @@ public class Flight {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDateTime flightDate;
+    private LocalDateTime flightDateLand;
     @Enumerated(EnumType.STRING)
     private FlightStateEnum flightStatus;
 
@@ -35,16 +36,19 @@ public class Flight {
     @JoinColumn(name = "Airlines_id")
     private Airlines airlines;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "flight_details_id")
     private FlightDetails flightDetails;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "aircraft_id")
     private Aircraft aircraft;
+    @Enumerated(EnumType.STRING)
+    private FlightStateEnum status;
 
     private BigDecimal priceEconomy;
     private BigDecimal priceBusiness;
+    private Boolean isDeleted;
 }
 
 

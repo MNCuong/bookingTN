@@ -1,0 +1,27 @@
+@startuml
+|Customer|
+start
+:Truy cập "Vé của tôi";
+|Frontend|
+:Send GET /api/bookings kèm token;
+|Backend|
+:Xác thực token;
+if (Token hợp lệ?) then (Yes)
+  :Lấy userId từ token;
+  :Tìm vé đã đặt theo userId;
+  if (Có vé?) then (Yes)
+    :Trả về danh sách vé;
+    |Frontend|
+    :Hiển thị danh sách vé;
+  else (No)
+    :Trả về danh sách rỗng;
+    |Frontend|
+    :Hiển thị "Chưa đặt vé nào";
+  endif
+else (No)
+  :Trả về lỗi 401;
+  |Frontend|
+  :Yêu cầu đăng nhập lại;
+endif
+stop
+@enduml

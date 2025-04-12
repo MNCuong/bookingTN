@@ -1,0 +1,19 @@
+@startuml
+actor Customer
+participant "Frontend (UI)" as UI
+participant "FlightController" as Controller
+participant "FlightService" as Service
+participant "FlightRepository" as Repo
+database "Database" as DB
+
+Customer -> UI : Truy cập trang tìm chuyến bay
+UI -> Controller : GET /api/flights?from=A&to=B&date=...
+Controller -> Service : searchFlights()
+Service -> Repo : findFlights(...)
+Repo -> DB : SELECT * FROM flights WHERE ...
+DB --> Repo : danh sách chuyến bay
+Repo --> Service : danh sách chuyến bay
+Service --> Controller : danh sách chuyến bay
+Controller --> UI : 200 OK + JSON chuyến bay
+UI --> Customer : Hiển thị danh sách chuyến bay
+@enduml

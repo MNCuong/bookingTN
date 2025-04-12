@@ -1,0 +1,128 @@
+@startuml
+
+'============== CLASS DEFINITIONS ==============
+
+class Aircraft {
+    Long id
+    String registration
+    String iata
+    String icao
+    String icao24
+    AircraftStatusEnum status
+    AircraftTypeEnums type
+}
+
+class Airlines {
+    Long id
+    String name
+    String iata
+    String icao
+}
+
+class AirportInfo {
+    Long id
+    String airport
+    String timezone
+    String iata
+    String icao
+    String terminal
+    String gate
+    Integer delay
+    LocalDateTime scheduled
+    LocalDateTime estimated
+    LocalDateTime actual
+    LocalDateTime estimatedRunway
+    LocalDateTime actualRunway
+}
+
+class CodeSharedFlight {
+    Long id
+    String airlineName
+    String airlineIata
+    String airlineIcao
+    String flightNumber
+    String flightIata
+    String flightIcao
+}
+
+class FlightDetails {
+    Long id
+    String number
+    String iata
+    String icao
+}
+
+class Flight {
+    Long id
+    LocalDateTime flightDate
+    FlightStateEnum flightStatus
+    BigDecimal priceEconomy
+    BigDecimal priceBusiness
+}
+
+class FlightBooking {
+    Long id
+    String idBooking
+    String seatNumber
+    BigDecimal totalPrice
+    String status
+    LocalDate flightDate
+    LocalDateTime createdAt
+    LocalTime departureTime
+    LocalTime arrivalTime
+}
+
+class PaymentTransaction {
+    Long id
+    String status
+    double amount
+    LocalDate transactionDate
+    String paymentMethod
+    String transactionNo
+    String description
+    String typeBooking
+    TypeServiceEnum typeService
+}
+
+class UserProfileFlight {
+    Long id
+    String fullName
+    String email
+    String phone
+    LocalDate dateOfBirth
+    String gender
+    String nationality
+    String nationalityCode
+    String personalCode
+    String seatNumber
+    String ticketType
+}
+
+class User {
+    Long id
+    String username
+    String email
+    ...
+}
+
+'============== RELATIONSHIPS ==============
+
+Aircraft "0..*" --> "1" Airlines : belongs to
+
+Flight "1" --> "1" AirportInfo : departure
+Flight "1" --> "1" AirportInfo : arrival
+
+Flight "0..*" --> "1" Airlines : operated by
+Flight "1" --> "1" Aircraft : uses
+Flight "1" --> "1" FlightDetails : has
+
+FlightDetails "0..*" --> "1" Airlines : owned by
+FlightDetails "0..1" --> "1" CodeSharedFlight : codeshared
+
+FlightBooking "0..*" --> "1" User : booked by
+FlightBooking "0..*" --> "1" Flight : for flight
+UserProfileFlight "0..*" --> "1" Flight : for flight
+
+PaymentTransaction "0..*" --> "1" User : paid by
+
+@enduml

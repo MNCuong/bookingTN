@@ -1,0 +1,46 @@
+@startuml
+actor Admin
+participant "Frontend (UI)" as UI
+participant "FlightController" as Controller
+participant "AuthFilter" as Auth
+participant "FlightService" as Service
+participant "FlightRepository" as FlightRepo
+participant "JWT Utility" as JWT
+database "Database" as DB
+
+Admin -> UI : Nhấn xóa chuyến bay
+UI -> Controller : DELETE /api/flights/{id} (Authorization: Bearer token)
+
+Controller -> Auth : kiểm tra token
+Auth -> JWT : validateToken(token)
+
+alt Token hợp lệ
+    JWT --> Auth : OK + user info
+    Auth --> Controller : Cho phép tiếp tục
+
+    Controller -> Service : deleteFlight(id)
+    Service -> FlightRepo : existsById(id)
+
+    alt Tồn tại chuyến bay
+        FlightRepo --> Service : true
+        Service -> FlightRepo : deleteById(id)
+        FlightRepo -> DB : delete from flight where id = ?
+        DB --> FlightRepo : OK
+        FlightRepo --> Service : void
+        Service --> Controller : 204 No Content
+        Controller --> UI : Xóa thành công
+        UI --> Admin : Hiển thị thông báo
+    else Không tồn tại chuyến bay
+        FlightRepo --> Service : false
+        Service --> Controller : throw FlightNotFoundException
+        Controller --> UI : 404 Not Found
+        UI --> Admin : Hiển thị lỗi
+    end
+
+else Token không hợp lệ
+    JWT --> Auth : InvalidTokenException
+    Auth --> Controller : throw UnauthorizedException
+    Controller --> UI : 401 Unauthorized
+    UI --> Admin : Hiển thị lỗi đăng nhập
+end
+@enduml
