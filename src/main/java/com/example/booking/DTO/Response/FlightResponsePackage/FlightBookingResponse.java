@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class FlightBookingResponse {
     String flightBookingId;
+    String transactionId;
     String status;
     String message;
 }

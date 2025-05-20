@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import java.util.List;
 
@@ -36,16 +37,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("*")); // Cho phép https
+                    config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5175","http://localhost:5174","https://flight-app-ashy.vercel.app","https://master-filly-mostly.ngrok-free.app"));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
                     return config;
                 }))
+
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/user/register").permitAll()
@@ -54,15 +55,17 @@ public class SecurityConfig {
                         .requestMatchers("/bookingBE-MNC/api/hotels/**").permitAll()
                         .requestMatchers("/api/chatbot/**").permitAll()
                         .requestMatchers("/api/sync/**").permitAll()
+                        .requestMatchers("/api/v1/**").permitAll()
                         .requestMatchers("/api/v1/elastic/**").permitAll()
                         .requestMatchers("/api/v1/auth/verify").permitAll()
                         .requestMatchers("/es/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/v1/payment/**").permitAll()
+                        .requestMatchers("/api/v1/flights/**").permitAll()
                         .requestMatchers("/payment/**").permitAll()
                         .requestMatchers("/view/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/v1/**").hasRole("ADMIN")
+//                        .requestMatchers("/api/v1/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/user/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -70,14 +73,14 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .formLogin(form -> form
-                        .loginPage("/view/user/login")
+                        .loginPage("/login")
                         .permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

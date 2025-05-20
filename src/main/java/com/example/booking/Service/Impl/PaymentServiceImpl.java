@@ -13,6 +13,10 @@ import com.example.booking.Utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -297,6 +302,56 @@ public class PaymentServiceImpl implements PaymentService {
         query.append("&vnp_SecureHash=").append(vnp_SecureHash);
         log.info("URLpayment:{}", vnPayConfig.getVnp_PayUrl() + "?" + query.toString());
         return vnPayConfig.getVnp_PayUrl() + "?" + query.toString();
+    }
+
+    @Override
+    public Page<PaymentTransaction> getList(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        if (search == null || search.isEmpty()) {
+            return paymentRepository.findAll(pageable);
+        } else {
+            return paymentRepository.findAllByTransactionNo(search, pageable);
+        }
+
+    }
+
+    @Override
+    public PaymentTransaction getPaymentDetail(Long id) {
+        return paymentRepository.findById(id).orElse(null);
+    }
+
+    public Map<Integer, Double> getRevenueByMonth(int year) {
+        return paymentRepository.getRevenueByMonth(year)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> ((Integer) row[0]),
+                        row -> ((Double) row[1])
+                ));
+    }
+
+    public Map<Integer, Double> getRevenueByDayInMonth(int month, int year) {
+        return paymentRepository.getRevenueByDayInMonth(month, year)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> ((Integer) row[0]),
+                        row -> ((Double) row[1])
+                ));
+    }
+
+    public Map<Integer, Double> getRevenueByQuarter(int quarter, int year) {
+        int startMonth = (quarter - 1) * 3 + 1;
+        int endMonth = startMonth + 2;
+        return paymentRepository.getRevenueByQuarter(startMonth, endMonth, year)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> ((Integer) row[0]),
+                        row -> ((Double) row[1])
+                ));
+    }
+
+    @Override
+    public PaymentTransaction findByVnp_TransactionNo(String vnp_TransactionNo) {
+        return paymentRepository.findByTransactionNo(vnp_TransactionNo);
     }
 }
 

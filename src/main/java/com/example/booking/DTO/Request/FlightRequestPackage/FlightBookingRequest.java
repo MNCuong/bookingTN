@@ -1,6 +1,5 @@
 package com.example.booking.DTO.Request.FlightRequestPackage;
 
-import com.example.booking.Entity.UserProfileFlight;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,7 +11,7 @@ import java.util.List;
 @Data
 @Builder
 public class FlightBookingRequest {
-    private List<UserProfileFlight> userProfileFlight;
+    private String transactionId;
     private String flightCode;
     private String aircraftModel;
     private List<String> seatNumber;

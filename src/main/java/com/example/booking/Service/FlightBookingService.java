@@ -8,10 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface FlightBookingService {
     FlightBooking findById(long id);
     void save(FlightBooking flightBooking);
-    String searchFlights(String depIata, String arrIata);
-
+//    String searchFlights(String depIata, String arrIata);
+//
     Object convertToJson(String jsonString);
 
     int getAvailableSeats(String flightCode, String aircraftModel);
-    FlightBookingResponse bookFlight(FlightBookingRequest flightBookingRequest, HttpServletRequest httpServletRequest);
+//    FlightBookingResponse bookFlight(FlightBookingRequest flightBookingRequest, HttpServletRequest httpServletRequest);
 }

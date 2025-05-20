@@ -29,14 +29,14 @@ public class FlightBookingController {
 //    public ResponseEntity<ResponseDto<String>> getFlights(@RequestParam String dep, @RequestParam String arr, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate flightDate) {
     public ResponseEntity<ResponseDto<Object>> getFlights(@RequestParam String dep, @RequestParam String arr) {
         {
-            String result = flightBookingService.searchFlights(dep, arr);
-            Object jsonData = flightBookingService.convertToJson(result);
-            return ResponseConfig.success(jsonData);
+//            String result = flightBookingService.searchFlights(dep, arr);
+//            Object jsonData = flightBookingService.convertToJson(result);
+            return ResponseConfig.success(null);
         }
     }
-    @PostMapping("/flight-booking")
-    public ResponseEntity<ResponseDto<FlightBookingResponse>> bookTicket(@RequestBody FlightBookingRequest request, HttpServletRequest httpServletRequest) {
-        return ResponseConfig.success(flightBookingService.bookFlight(request,httpServletRequest));
-    }
+//    @PostMapping("/flight-booking")
+//    public ResponseEntity<ResponseDto<FlightBookingResponse>> bookTicket(@RequestBody FlightBookingRequest request, HttpServletRequest httpServletRequest) {
+//        return ResponseConfig.success(flightBookingService.bookFlight(request,httpServletRequest));
+//    }
 
 }

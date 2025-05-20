@@ -28,11 +28,11 @@ public class EmailServiceImpl implements EmailService {
 
     public void sendCusSimpleMessageConfirmRegister(User user, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("cuongm912003@gmail.com");
+        message.setFrom("cuongll9103@gmail.com");
         message.setTo(user.getEmail());
         message.setSubject("Account Verification");
         message.setText("Hi " + user.getFullName() + ",\n\nPlease click the link below to verify your account:\n\n"
-                + "https://master-filly-mostly.ngrok-free.app/bookingBE-MNC/api/v1/auth/verify?userId=" + user.getId() + "&token=" + token);
+                + "/http://localhost:5173/verify?userId=" + user.getId() + "&token=" + token);
         emailSender.send(message);
 
 

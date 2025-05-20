@@ -1,13 +1,16 @@
 package com.example.booking.Controller.Customer;
 
 import java.util.Map;
+
 import com.example.booking.Config.ResponseConfig;
 import com.example.booking.Config.ResponseDto;
 import com.example.booking.DTO.Request.PayRequest;
+import com.example.booking.Entity.PaymentTransaction;
 import com.example.booking.Service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +22,9 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
     private final PaymentService paymentService;
 
-    @GetMapping("/pay")
+    @PostMapping("/pay")
     public ResponseEntity<ResponseDto<String>> getPay(HttpServletRequest request, @RequestBody PayRequest payRequest) throws Exception {
-        return ResponseConfig.success(paymentService.getPay(request,payRequest));
+        return ResponseConfig.success(paymentService.getPay(request, payRequest));
     }
 
 //    @GetMapping("/vnpay-return")
@@ -48,4 +51,30 @@ public class PaymentController {
         return ResponseConfig.success(paymentService.saveTransaction(params));
     }
 
+    @GetMapping("/list-transaction")
+    public ResponseEntity<ResponseDto<Page<PaymentTransaction>>> getList(@RequestParam(defaultValue = "0") int page,
+                                                                         @RequestParam(defaultValue = "10") int size,
+                                                                         @RequestParam String search) {
+        return ResponseConfig.success(paymentService.getList(page, size, search));
+    }
+
+    @GetMapping("/payment-detail/{id}")
+    public ResponseEntity<ResponseDto<PaymentTransaction>> getPaymentDetail(@PathVariable Long id) {
+        return ResponseConfig.success(paymentService.getPaymentDetail(id));
+    }
+
+    @GetMapping("/revenue/monthly")
+    public ResponseEntity<Map<Integer, Double>> getMonthlyRevenue(@RequestParam int year) {
+        return ResponseEntity.ok(paymentService.getRevenueByMonth(year));
+    }
+
+    @GetMapping("/revenue/daily")
+    public ResponseEntity<Map<Integer, Double>> getDailyRevenue(@RequestParam int month, @RequestParam int year) {
+        return ResponseEntity.ok(paymentService.getRevenueByDayInMonth(month, year));
+    }
+
+    @GetMapping("/revenue/quarter")
+    public ResponseEntity<Map<Integer, Double>> getQuarterRevenue(@RequestParam int quarter, @RequestParam int year) {
+        return ResponseEntity.ok(paymentService.getRevenueByQuarter(quarter, year));
+    }
 }

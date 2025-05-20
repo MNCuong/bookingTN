@@ -2,16 +2,26 @@ package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
 import com.example.booking.Common.ServiceMessageConstants;
+import com.example.booking.DTO.Request.FlightRequestPackage.ChangePasswordRequest;
 import com.example.booking.DTO.Request.FlightRequestPackage.RegisterFlightRequest;
 import com.example.booking.DTO.Request.RegisterRequest;
+import com.example.booking.DTO.Response.FlightResponse;
 import com.example.booking.DTO.Response.UserResponse;
+import com.example.booking.Entity.Flight;
 import com.example.booking.Entity.User;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Repository.UserRepository;
 import com.example.booking.Service.EmailService;
 import com.example.booking.Service.UserService;
+import com.example.booking.Utils.JwtUtil;
+import io.minio.credentials.Jwt;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,6 +41,7 @@ public class UserServiceImpl implements UserService {
     private final MessageCommon messageCommon;
     private final EmailService emailService;
     private final RedisService verificationService;
+    private final JwtUtil jwtUtil;
 
     @Override
     public User findUserByEmail(String email) {
@@ -99,7 +110,8 @@ public class UserServiceImpl implements UserService {
         }
         if (userRepository.existsByPhone(registerFlightRequest.getPhone_number())) {
             throw new BookingException(ServiceMessageConstants.PHONE_EXIST, messageCommon.getMessage(ServiceMessageConstants.PHONE_EXIST));
-        } if (userRepository.existsByFullName(registerFlightRequest.getFull_name())) {
+        }
+        if (userRepository.existsByFullName(registerFlightRequest.getFull_name())) {
             throw new BookingException(ServiceMessageConstants.FULLNAME_AIRLINE_EXIST, messageCommon.getMessage(ServiceMessageConstants.FULLNAME_AIRLINE_EXIST));
         }
 
@@ -162,8 +174,54 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponse getUserInfoByEmail(String email) {
+        User user = userRepository.findByEmail(email);
+        return UserResponse.builder()
+                .phone_number(user.getPhone())
+                .email(user.getEmail())
+                .full_name(user.getFullName())
+                .created_at(user.getCreatedAt())
+                .role(user.getRoles())
+                .build();
+    }
+
+    @Override
+    public User getUserProfile(HttpServletRequest request) {
+        String token = JwtUtil.getTokenFromRequest(request);
+        String email = jwtUtil.extractUsername(token);
+        return userRepository.findUserByEmail(email);
+    }
+
+    @Override
+    public List<User> getAllUser() {
+        return userRepository.findAll();
+    }
+
+    @Override
     public Optional<User> findUserById(long userId) {
         return userRepository.findById(userId);
+    }
+
+    @Override
+    public Page<User> getAllUser(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        if (search == null || search.trim().isEmpty()) {
+            return userRepository.findAll(pageable);
+        } else {
+            return userRepository.findAllAnyField(search, pageable);
+        }
+    }
+
+    @Override
+    public User changePass(ChangePasswordRequest changePasswordRequest, HttpServletRequest request) {
+        String token= JwtUtil.getTokenFromRequest(request);
+        String email = jwtUtil.extractUsername(token);
+        User user = userRepository.findUserByEmail(email);
+        if(!user.getPasswordHash().equals(passwordEncoder.encode(changePasswordRequest.getCurrentPassword()))) {
+            throw new BookingException("Error","Passwords do not match");
+        }
+        user.setPasswordHash(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+        return userRepository.save(user);
     }
 
     @Scheduled(fixedRate = 60000)  // Chạy mỗi 1 phút

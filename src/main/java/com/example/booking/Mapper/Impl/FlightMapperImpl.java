@@ -17,17 +17,19 @@ public class FlightMapperImpl implements FlightMapper {
             return null;
         }
 
-        return FlightResponse.builder()
-                .airline(flight.getAirlines())
-                .arrivalAirport(flight.getArrival())
-                .arrivalTime(flight.getArrival().getScheduled())
-                .departureAirport(flight.getDeparture())
-                .departureTime(flight.getDeparture().getScheduled())
-                .flightDetails(flight.getFlightDetails())
-                .aircraft(flight.getAircraft())
-                .priceBusiness(flight.getPriceBusiness())
-                .priceEconomy(flight.getPriceEconomy())
-                .build();
+//        return FlightResponse.builder()
+//                .id(flight.getId())
+//                .airline(flight.getAirlines())
+//                .arrivalAirport(flight.getArrival())
+//                .arrivalTime(flight.getArrival().getScheduled())
+//                .departureAirport(flight.getDeparture())
+//                .departureTime(flight.getDeparture().getScheduled())
+//                .flightDetails(flight.getFlightDetails())
+//                .aircraft(flight.getAircraft())
+//                .priceBusiness(flight.getPriceBusiness())
+//                .priceEconomy(flight.getPriceEconomy())
+//                .build();
+        return null;
     }
 
     @Override

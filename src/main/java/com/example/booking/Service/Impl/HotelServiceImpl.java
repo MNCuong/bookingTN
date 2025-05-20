@@ -95,6 +95,7 @@ public class HotelServiceImpl implements HotelService {
         return minIOService.getHotelImages(hotelId);
     }
 
+
     @Override
     public Hotel findByUser(User user) {
         return hotelRepository.findByUser(user);

@@ -14,11 +14,12 @@ public class AircraftMapperImpl implements AircraftMapper {
         }
         return AircraftResponse.builder()
                 .id(aircraft.getId())
-                .airlines(aircraft.getAirlines())
-                .iata(aircraft.getIata())
-                .icao24(aircraft.getIcao24())
-                .icao(aircraft.getIcao())
+                .createAt(aircraft.getCreateAt())
+                .updateAt(aircraft.getUpdateAt())
                 .registration(aircraft.getRegistration())
+                .type(aircraft.getType())
+                .seat(aircraft.getSeat())
+                .status(aircraft.getStatus())
                 .build();
     }
 }

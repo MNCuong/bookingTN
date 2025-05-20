@@ -1,26 +1,57 @@
 package com.example.booking.DTO.Request.FlightRequestPackage;
 
-import com.example.booking.Enum.FlightStateEnum;
-import lombok.Builder;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+import java.util.List;
 
 @Data
-@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class FlightRequest {
-    private LocalDateTime flight_date;
-    private LocalDateTime flight_date_land;
-    private Long departure_id;
-    private Long arrival_id;
-    private Long airline_id;
-    private Long aircraft_id;
-    private FlightDetailsRequest flight_details_request;
-    private FlightStateEnum flight_status;
-    private BigDecimal priceEconomy;
-    private BigDecimal priceBusiness;
-    private Boolean isDeleted;
 
+    @NotBlank
+    private String flightCode;
+
+    @NotNull
+    private LocalDateTime departureTime;
+
+    @NotNull
+    private LocalDateTime arrivalTime;
+
+    @NotNull
+    private Long departureAirportId;
+
+    @NotNull
+    private Long arrivalAirportId;
+    @NotNull
+    private Long airlineId;
+    @NotBlank
+    private String status;
+
+    private String statusReason;
+
+    @NotBlank
+    private String aircraftRegistration;
+
+    @NotNull
+    private Double priceEconomy;
+
+    @NotNull
+    private Double priceBusiness;
+
+
+    private String departureGate;
+    private String arrivalGate;
+    private int seats;
+    private int availableSeats;
+
+    private LocalDateTime checkInDeadline;
+    private LocalDateTime boardingTime;
+
+    private List<Long> crewIds;
 }

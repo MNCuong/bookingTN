@@ -8,8 +8,7 @@ public class RegisterFlightRequest {
     private String password;
     private String full_name;
     private String phone_number;
-    private String iata;
-    private String icao;
+
     private String name;
 
 }
