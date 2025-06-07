@@ -26,6 +26,7 @@ public class Passenger {
     private LocalDate birthDate;
     private boolean gender;
     private BigDecimal price;
+    private String type;
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;

@@ -36,4 +36,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
             """)
     Page<User> findAllAnyField(@Param("search") String search, Pageable pageable);
 
+    User findUserById(Long id);
 }

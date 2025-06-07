@@ -38,9 +38,7 @@ public class PaymentTransaction {
     private String transactionNo;
     @Column(nullable = true)
     private String description;
-    @OneToOne
-    private Ticket ticket;
-    // Quan hệ với User (Người thanh toán)
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;

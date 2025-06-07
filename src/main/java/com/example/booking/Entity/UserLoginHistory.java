@@ -18,8 +18,7 @@ public class UserLoginHistory {
 
     private LocalDateTime loginTime;
 
-    private String loginIp;
+    private String userAgent;
 
-    private String loginLocation;
 
 }

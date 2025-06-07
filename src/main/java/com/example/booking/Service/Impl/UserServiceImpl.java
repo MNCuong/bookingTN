@@ -5,16 +5,13 @@ import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.DTO.Request.FlightRequestPackage.ChangePasswordRequest;
 import com.example.booking.DTO.Request.FlightRequestPackage.RegisterFlightRequest;
 import com.example.booking.DTO.Request.RegisterRequest;
-import com.example.booking.DTO.Response.FlightResponse;
 import com.example.booking.DTO.Response.UserResponse;
-import com.example.booking.Entity.Flight;
 import com.example.booking.Entity.User;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.Repository.UserRepository;
 import com.example.booking.Service.EmailService;
 import com.example.booking.Service.UserService;
 import com.example.booking.Utils.JwtUtil;
-import io.minio.credentials.Jwt;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +60,8 @@ public class UserServiceImpl implements UserService {
                 .fullName("CUS_" + registerRequest.getFull_name())
                 .createdAt(LocalDateTime.now())
                 .verified(false)
+                .active(true)
+                .count(0)
                 .roles("USER")
                 .build());
         emailService.sendVerificationEmail(savedUser);
@@ -75,33 +74,6 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    @Override
-    public UserResponse registerHotel(RegisterRequest registerRequest) {
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new BookingException(ServiceMessageConstants.EMAIL_EXIST, messageCommon.getMessage(ServiceMessageConstants.EMAIL_EXIST));
-        }
-        if (userRepository.existsByPhone(registerRequest.getPhone_number())) {
-            throw new BookingException(ServiceMessageConstants.PHONE_EXIST, messageCommon.getMessage(ServiceMessageConstants.PHONE_EXIST));
-        }
-        User savedUser = userRepository.save(User.builder()
-                .phone(registerRequest.getPhone_number())
-                .email(registerRequest.getEmail())
-                .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
-                .fullName("HOTEL_" + registerRequest.getFull_name())
-                .createdAt(LocalDateTime.now())
-                .verified(false)
-                .roles("ADMIN")
-                .build());
-        emailService.sendVerificationEmail(savedUser);
-
-        return UserResponse.builder()
-                .phone_number(registerRequest.getPhone_number())
-                .email(registerRequest.getEmail())
-                .full_name(registerRequest.getFull_name())
-                .created_at(savedUser.getCreatedAt())
-                .role(savedUser.getRoles())
-                .build();
-    }
 
     @Override
     public UserResponse registerAirline(RegisterFlightRequest registerFlightRequest) {
@@ -214,15 +186,91 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User changePass(ChangePasswordRequest changePasswordRequest, HttpServletRequest request) {
-        String token= JwtUtil.getTokenFromRequest(request);
+        String token = JwtUtil.getTokenFromRequest(request);
         String email = jwtUtil.extractUsername(token);
         User user = userRepository.findUserByEmail(email);
-        if(!user.getPasswordHash().equals(passwordEncoder.encode(changePasswordRequest.getCurrentPassword()))) {
-            throw new BookingException("Error","Passwords do not match");
+        if (!user.getPasswordHash().equals(passwordEncoder.encode(changePasswordRequest.getCurrentPassword()))) {
+            throw new BookingException("Error", "Passwords do not match");
         }
         user.setPasswordHash(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         return userRepository.save(user);
     }
+
+    @Override
+    public User forgotPassword(String email) {
+        User user = userRepository.findUserByEmail(email);
+        if (user == null) {
+            throw new BookingException("Error", "User not found");
+        }
+        return user;
+    }
+
+    @Override
+    public User lock(String email) {
+        User user = userRepository.findUserByEmail(email);
+        if (user == null) {
+            throw new BookingException("Error", "User not found");
+        }
+        user.setActive(!user.isActive());
+        userRepository.save(user);
+        return null;
+    }
+
+    @Override
+    public User resetPassword(String password, String email) {
+
+        User user = userRepository.findUserByEmail(email);
+        if (user == null) {
+            throw new BookingException("Error", "User not found");
+        }
+        user.setPasswordHash(passwordEncoder.encode(password));
+        return userRepository.save(user);
+    }
+
+    @Override
+    public void increaseFailedAttempts(String email) {
+        Optional<User> optional = Optional.ofNullable(userRepository.findByEmail(email));
+        if (optional.isPresent()) {
+            User user = optional.get();
+            int newFail = user.getCount() + 1;
+            user.setCount(newFail);
+            if (newFail >= 5) {
+                user.setActive(false);
+                user.setLock_time(LocalDateTime.now());
+            }
+            userRepository.save(user);
+        }
+    }
+
+    @Override
+    public void resetFailedAttempts(String email) {
+        Optional<User> optional = Optional.ofNullable(userRepository.findByEmail(email));
+        if (optional.isPresent()) {
+            User user = optional.get();
+            user.setCount(0);
+            user.setLock_time(null);
+            user.setActive(true);
+            userRepository.save(user);
+        }
+    }
+
+//    @Override
+//    public boolean unlockWhenTimeExpired(User user) {
+//        if (!user.isActive()) {
+//            LocalDateTime lockTime = user.getLock_time();
+//            if (lockTime != null) {
+//                LocalDateTime unlockTime = lockTime.plusMinutes(15);
+//                if (LocalDateTime.now().isAfter(unlockTime)) {
+//                    user.setActive(true);
+//                    user.setLock_time(null);
+//                    user.setCount(0);
+//                    userRepository.save(user);
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
     @Scheduled(fixedRate = 60000)  // Chạy mỗi 1 phút
     public void deleteUnverifiedUsers() {

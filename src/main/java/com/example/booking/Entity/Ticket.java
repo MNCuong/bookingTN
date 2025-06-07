@@ -17,6 +17,7 @@ public class Ticket {
     private String seatNumber;
     private String classType; // ECONOMY, BUSINESS
     private BigDecimal price;
+    private String tripType;
 
     private boolean checkedIn;
 

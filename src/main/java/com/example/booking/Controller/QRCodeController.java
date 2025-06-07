@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/qrcode")
 public class QRCodeController {
 
-    @GetMapping(produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<byte[]> getQRCode(@RequestParam String text) {
-        byte[] qrImage = ServiceCommon.getQRCodeImage(text, 250, 250);
-        if (qrImage == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-        return ResponseEntity.ok(qrImage);
-    }
+//    @GetMapping(produces = MediaType.IMAGE_PNG_VALUE)
+//    public ResponseEntity<byte[]> getQRCode(@RequestParam String text) {
+//        byte[] qrImage = ServiceCommon.getQRCodeImage(, 250, 250);
+//        if (qrImage == null) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//        return ResponseEntity.ok(qrImage);
+//    }
 }

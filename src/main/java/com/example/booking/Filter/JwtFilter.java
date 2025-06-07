@@ -38,12 +38,17 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authorizationHeader.substring(7); // Bỏ "Bearer " khỏi token
+        String token = authorizationHeader.substring(7);
+        log.info("tokencsadadasds: {}", token);
         String username = jwtUtil.extractUsername(token);
+        log.info("tokencsadadasds: {}", username);
+
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
             List<GrantedAuthority> authorities = jwtUtil.getAuthoritiesFromToken(token);
             if (jwtUtil.validateToken(token, userDetails)) {
+                log.info("tokencsadadasds: {}", jwtUtil.validateToken(token, userDetails));
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 

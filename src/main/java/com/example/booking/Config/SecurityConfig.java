@@ -23,11 +23,9 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
-    private final UserDetailsService userDetailsService;
 
     public SecurityConfig(JwtFilter jwtFilter, UserDetailsService userDetailsService) {
         this.jwtFilter = jwtFilter;
-        this.userDetailsService = userDetailsService;
     }
 
     @Bean
@@ -63,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/payment/**").permitAll()
                         .requestMatchers("/api/v1/flights/**").permitAll()
                         .requestMatchers("/payment/**").permitAll()
+                        .requestMatchers("/test/**").permitAll()
                         .requestMatchers("/view/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 //                        .requestMatchers("/api/v1/**").hasRole("ADMIN")

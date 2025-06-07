@@ -19,8 +19,6 @@ public class Booking {
     private Long id;
     @ManyToOne
     private User user;
-    @ManyToOne
-    private Room room;
     private LocalDate checkIn;
     private LocalDate checkOut;
     private BigDecimal totalPrice;

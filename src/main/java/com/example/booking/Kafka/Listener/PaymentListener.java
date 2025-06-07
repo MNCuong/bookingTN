@@ -29,9 +29,8 @@ public class PaymentListener {
                 .userEmail(event.getUserEmail())
                 .build();
 
-        // Gọi API thanh toán VNPAY
         String paymentUrl = paymentService.getPayKafka(payRequest);
-        webSocketService.sendPaymentLink(event.getBookingId() + "", paymentUrl);
-
+        webSocketService.sendPaymentLink(event.getBookingId().toString(), paymentUrl);
     }
+
 }

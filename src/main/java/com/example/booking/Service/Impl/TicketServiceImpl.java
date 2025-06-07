@@ -1,16 +1,13 @@
 package com.example.booking.Service.Impl;
 
 import com.example.booking.DTO.Response.FlightResponsePackage.FlightsResponse;
-import com.example.booking.DTO.Response.FlightResponsePackage.PassengerResponse;
 import com.example.booking.DTO.Response.FlightResponsePackage.TicketResponse;
 import com.example.booking.Entity.*;
 import com.example.booking.Repository.TicketRepository;
 import com.example.booking.Service.FlightService;
-import com.example.booking.Service.PassengerService;
 import com.example.booking.Service.TicketService;
 import com.example.booking.Service.UserService;
 import com.example.booking.Utils.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -156,8 +154,8 @@ public class TicketServiceImpl implements TicketService {
         ticketRepo.save(ticket);
     }
 
-
-    public List<Map<String, Object>> getTicketsGroupedByTransaction(Long userId) {
+    @Override
+    public List<Map<String, Object>> getTicketsGroupedByTransaction(Long userId, int page, int size) {
         List<Ticket> tickets = ticketRepo.findTicketsByUserId(userId);
 
         Map<Long, Map<String, Object>> groupedTickets = new LinkedHashMap<>();
@@ -188,15 +186,29 @@ public class TicketServiceImpl implements TicketService {
             ticketList.add(ticketData);
         }
 
-        return new ArrayList<>(groupedTickets.values());
+        List<Map<String, Object>> resultList = new ArrayList<>(groupedTickets.values());
+
+        resultList.sort((m1, m2) -> {
+            LocalDate d1 = (LocalDate) m1.get("transactionDate");
+            LocalDate d2 = (LocalDate) m2.get("transactionDate");
+            return d2.compareTo(d1);
+        });
+
+        // Phân trang thủ công:
+        int start = page * size;
+        int end = Math.min(start + size, resultList.size());
+        if (start > end) {
+            return new ArrayList<>();
+        }
+        return resultList.subList(start, end);
     }
 
     @Override
     public String checkin(Long id) {
-        Ticket ticket=ticketRepo.findById(id).get();
-        if(ticket==null){
+        Ticket ticket = ticketRepo.findById(id).get();
+        if (ticket == null) {
             throw new RuntimeException("Ticket not found");
-        }else{
+        } else {
             ticket.setCheckedIn(true);
             ticket.setCheckinDate(LocalDateTime.now());
             ticketRepo.save(ticket);

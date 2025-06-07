@@ -1,6 +1,5 @@
 package com.example.booking.DTO.Request;
 
-import com.example.booking.Entity.Room;
 import lombok.Data;
 
 import java.math.BigDecimal;

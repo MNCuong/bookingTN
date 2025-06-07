@@ -1,6 +1,7 @@
 package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
+import com.example.booking.Common.ServiceCommon;
 import com.example.booking.Common.ServiceMessageConstants;
 import com.example.booking.Config.VnPayConfig;
 import com.example.booking.DTO.Request.PayRequest;
@@ -43,12 +44,9 @@ public class PaymentServiceImpl implements PaymentService {
     private final JwtUtil jwtUtil;
     private final UserService userService;
     private final BookingService bookingService;
-    private final CarRentalBookingsService carRentalBookingsService;
     private final FlightBookingService flightBookingService;
-    private final RoomService roomService;
-    private final CarService carService;
     private final FlightService flightService;
-
+    private final EmailService emailService;
 
     @Override
     public String getPay(HttpServletRequest request, PayRequest payRequest) {
@@ -145,7 +143,6 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    //    @Transactional(rollbackFor = {Exception.class, BookingException.class})
     @Override
     public String saveTransaction(Map<String, String> params) {
         try {
@@ -156,62 +153,38 @@ public class PaymentServiceImpl implements PaymentService {
             boolean verify = verifySignature(params, params.get("vnp_SecureHash"));
             if (verify) {
                 String orderInfo = params.get("vnp_OrderInfo");
-                String typeBooking = orderInfo.substring(orderInfo.lastIndexOf("-") + 1);
-                Pattern pattern = Pattern.compile("mã đặt dịch vụ - (\\d+)");
+                Pattern pattern = Pattern.compile("mã đặt dịch vụ - \\[(.*?)\\]");
                 Matcher matcher = pattern.matcher(orderInfo);
-                String bookingId = "";
+
+                List<Long> bookingIds = new ArrayList<>();
                 if (matcher.find()) {
-                    bookingId = matcher.group(1);
+                    String bookingIdsStr = matcher.group(1);
+                    for (String id : bookingIdsStr.split(",")) {
+                        bookingIds.add(Long.parseLong(id.trim()));
+                    }
+                    log.info("Booking IDs: {}", bookingIds);
+                } else {
+                    throw new BookingException("Không tìm thấy mã đặt dịch vụ");
                 }
                 String responseCode = params.get("vnp_ResponseCode");
-                String type = typeBooking.trim();
                 if ("00".equals(responseCode)) {
-                    if (type.equals(TypeServiceEnum.CAR.toString())) {
-                        CarRentalBooking carRentalBooking = carRentalBookingsService.findById(Long.parseLong(bookingId));
-                        carRentalBooking.setStatus(StatusEnum.CONFIRMED.toString());
-                        carRentalBookingsService.save(carRentalBooking);
-                        CarRental car = carService.findById(carRentalBooking.getCar().getId());
-                        car.setStatus(CarStatus.BOOKED);
-                        carService.save(car);
+                    for (Long bookingId : bookingIds) {
+                        log.info("start");
+                        log.info("bookingId: {}", bookingId);
 
-                    } else if (type.equals(TypeServiceEnum.KS.toString())) {
-                        Booking booking = bookingService.findById(Long.parseLong(bookingId));
-                        booking.setStatus(StatusEnum.CONFIRMED.toString());
-                        bookingService.save(booking);
-                        Room room = roomService.findById(booking.getRoom().getId());
-                        room.setState(RoomStateEnums.BOOKED.toString());
-                        roomService.save(room);
-                    } else if (type.equals(TypeServiceEnum.PLANE.toString())) {
-                        FlightBooking flightBooking = flightBookingService.findById(Long.parseLong(bookingId));
-//                        flightBooking.setStatus(StatusEnum.CONFIRMED.toString());
-//                        flightBookingService.save(flightBooking);
-//                        Flight flight = flightService.findById(flightBooking.getFlight().getId());
-//                        flight.setState(FlightStateEnum.BOOKED);
-//                        flightService.save(flight);
+//                    }
                     }
-                    saveTran(params);
-                    return "Success";
-                } else {
-                    if (typeBooking.equals(TypeServiceEnum.CAR.toString())) {
-                        CarRentalBooking carRentalBooking = carRentalBookingsService.findById(Long.parseLong(bookingId));
-                        carRentalBooking.setStatus(StatusEnum.FAILED.toString());
-                        carRentalBookingsService.save(carRentalBooking);
-                    } else if (typeBooking.equals(TypeServiceEnum.KS.toString())) {
-                        Booking booking = bookingService.findById(Long.parseLong(bookingId));
-                        booking.setStatus(StatusEnum.FAILED.toString());
-                        bookingService.save(booking);
-                    } else if (typeBooking.equals(TypeServiceEnum.PLANE.toString())) {
-                        FlightBooking flightBooking = flightBookingService.findById(Long.parseLong(bookingId));
-                        flightBooking.setStatus(StatusEnum.FAILED.toString());
-                        flightBookingService.save(flightBooking);
-                    }
-                    saveTran(params);
-                    return "Fail";
                 }
+                saveTran(params);
+                return "Success";
+            } else {
 
+                saveTran(params);
+                return "Fail";
             }
 
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             params.put("vnp_TransactionStatus", "99");
             log.info("status: {}", params.get("vnp_TransactionStatus"));
             saveTran(params);
@@ -219,7 +192,6 @@ public class PaymentServiceImpl implements PaymentService {
             throw new BookingException(ServiceMessageConstants.PAYMENT_FAILED,
                     messageCommon.getMessage(ServiceMessageConstants.PAYMENT_FAILED));
         }
-        return "Invalid Signature";
 
     }
 

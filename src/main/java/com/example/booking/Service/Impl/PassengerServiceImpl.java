@@ -1,7 +1,9 @@
 package com.example.booking.Service.Impl;
 
+import com.example.booking.Common.ServiceCommon;
 import com.example.booking.DTO.Request.FlightRequestPackage.BookingFlRequest;
 import com.example.booking.DTO.Request.FlightRequestPackage.PassengerInfo;
+import com.example.booking.DTO.Request.FlightRequestPackage.TicketInfo;
 import com.example.booking.DTO.Response.FlightResponsePackage.PassengerResponse;
 import com.example.booking.DTO.Response.FlightResponsePackage.TicketResponse;
 import com.example.booking.Entity.*;
@@ -18,10 +20,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -34,6 +39,7 @@ public class PassengerServiceImpl implements PassengerService {
     private final UserService userService;
     private final FlightService flightService;
     private final PaymentService paymentService;
+    private final EmailService emailService;
 
     @Override
     public Passenger createPassenger(Passenger passenger, HttpServletRequest request) {
@@ -143,36 +149,89 @@ public class PassengerServiceImpl implements PassengerService {
     public void saveBooking(BookingFlRequest bookingFlRequest, HttpServletRequest request) throws Exception {
         String token = JwtUtil.getTokenFromRequest(request);
         User user = userService.findUserByEmail(jwtUtil.extractUsername(token));
-        List<Passenger> passengers = new ArrayList<>();
-        for (PassengerInfo info : bookingFlRequest.getPassengerInfos()) {
+        Flight departureFlight = new Flight();
+        Flight returnFlight = new Flight();
+        if (bookingFlRequest.getDepartureFlightId() != null) {
+            departureFlight = flightService.getFlightByIdFlight(bookingFlRequest.getDepartureFlightId());
+        }
+        if (bookingFlRequest.getReturnFlightId() != null) {
+            returnFlight = flightService.getFlightByIdFlight(bookingFlRequest.getReturnFlightId());
+        }
+        List<TicketInfo> departureTicketInfos = createTickets(
+                bookingFlRequest.getDepartureSeats(),
+                departureFlight.getPriceBusiness(),
+                departureFlight.getPriceEconomy()
+        );
+
+        List<TicketInfo> returnTicketInfos = bookingFlRequest.getReturnFlightId() != null
+                ? createTickets(bookingFlRequest.getReturnSeats(), returnFlight.getPriceBusiness(), returnFlight.getPriceEconomy())
+                : Collections.emptyList();
+
+        PaymentTransaction paymentTransaction = paymentService.findByVnp_TransactionNo(bookingFlRequest.getTransactionNo());
+        for (int i = 0; i < bookingFlRequest.getPassengerInfos().size(); i++) {
+            TicketInfo departureTicketInfo = departureTicketInfos.get(i);
+            TicketInfo returnTicketInfo = returnTicketInfos.size() > i ? returnTicketInfos.get(i) : null;
+            String tripType;
+            if (bookingFlRequest.getDepartureFlightId() != null && bookingFlRequest.getReturnFlightId() != null) {
+                tripType = "roundtrip";
+            } else {
+                tripType = "oneway";
+            }
+            PassengerInfo info = bookingFlRequest.getPassengerInfos().get(i);
             Passenger passenger = new Passenger();
-            log.info("gender: {}", info.getPassenger().getGender());
             passenger.setUser(user);
-            passenger.setFullName(info.getPassenger().getFullName());
-            passenger.setPassportNumber(info.getPassenger().getPassportNumber());
-            passenger.setNationalId(info.getPassenger().getNationalId());
-            passenger.setNationality(info.getPassenger().getNationality());
-            passenger.setEmail(info.getPassenger().getEmail());
-            passenger.setBirthDate(LocalDate.parse(info.getPassenger().getBirthDate()));
-            passenger.setGender("0".equals(info.getPassenger().getGender()));
-            passenger.setPrice(info.getPrice());
+            passenger.setFullName(info.getName());
+            passenger.setPassportNumber("");
+            passenger.setNationalId(info.getNationalId());
+            passenger.setNationality(info.getNationality());
+            passenger.setEmail(info.getEmail());
+            passenger.setBirthDate(info.getDateOfBirth());
+            passenger.setGender(info.getGender().equals("1"));
+            passenger.setType(tripType);
 
             Passenger savedPassenger = passengerRepo.save(passenger);
-            passengers.add(savedPassenger);
+//            passengers.add(savedPassenger);
 
-            Ticket ticket = new Ticket();
-            Flight flight = flightService.getFlightByIdFlight(bookingFlRequest.getFlightId());
-            PaymentTransaction paymentTransaction = paymentService.findByVnp_TransactionNo(bookingFlRequest.getTransactionNo());
-            ticket.setSeatNumber(info.getPassenger().getNumber());
-            ticket.setClassType(info.getPassenger().getType());
-            ticket.setPrice(info.getPrice());
-            ticket.setCheckedIn(false);
-            ticket.setPassenger(savedPassenger);
-            ticket.setFlight(flight);
-            ticket.setPaymentTransaction(paymentTransaction);
-            ticket.setCreatedAt(LocalDateTime.now());
+            if (bookingFlRequest.getDepartureFlightId() != null) {
+                Ticket ticketDeparture = new Ticket();
+                ticketDeparture.setSeatNumber(departureTicketInfo.getNumber());
+                ticketDeparture.setClassType(departureTicketInfo.getType());
+                ticketDeparture.setTripType(tripType);
+                ticketDeparture.setPrice(new BigDecimal(departureTicketInfo.getPrice().toString()));
+                ticketDeparture.setCheckedIn(false);
+                ticketDeparture.setPassenger(savedPassenger);
+                ticketDeparture.setFlight(departureFlight);
+                ticketDeparture.setPaymentTransaction(paymentTransaction);
+                ticketDeparture.setCreatedAt(LocalDateTime.now());
+                ticketService.save(ticketDeparture);
+            }
 
-            ticketService.save(ticket);
+            if (bookingFlRequest.getReturnFlightId() != null && returnTicketInfo != null) {
+                Ticket ticketReturn = new Ticket();
+                ticketReturn.setSeatNumber(returnTicketInfo.getNumber());
+                ticketReturn.setClassType(returnTicketInfo.getType());
+                ticketReturn.setTripType(tripType);
+                ticketReturn.setPrice(new BigDecimal(returnTicketInfo.getPrice().toString()));
+                ticketReturn.setCheckedIn(false);
+                ticketReturn.setPassenger(savedPassenger);
+                ticketReturn.setFlight(returnFlight);
+                ticketReturn.setPaymentTransaction(paymentTransaction);
+                ticketReturn.setCreatedAt(LocalDateTime.now());
+                ticketService.save(ticketReturn);
+            }
+
         }
+
     }
+
+    private List<TicketInfo> createTickets(List<String> seats, Double priceBusiness, Double priceEconomy) {
+        return seats.stream().map(seat -> {
+            int seatNumber = Integer.parseInt(seat.replaceAll("\\D+", ""));
+            String type = (seatNumber >= 1 && seatNumber <= 5) ? "Business" : "Economy";
+            Double price = type.equals("Business") ? priceBusiness : priceEconomy;
+
+            return new TicketInfo(seat, type, price);
+        }).collect(Collectors.toList());
+    }
+
 }

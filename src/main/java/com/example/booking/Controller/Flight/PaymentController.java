@@ -1,4 +1,4 @@
-package com.example.booking.Controller.Customer;
+package com.example.booking.Controller.Flight;
 
 import java.util.Map;
 

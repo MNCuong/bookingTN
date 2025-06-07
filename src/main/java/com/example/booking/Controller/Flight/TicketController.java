@@ -2,7 +2,6 @@ package com.example.booking.Controller.Flight;
 
 import com.example.booking.Config.ResponseConfig;
 import com.example.booking.Config.ResponseDto;
-import com.example.booking.DTO.Response.FlightResponse;
 import com.example.booking.DTO.Response.FlightResponsePackage.TicketResponse;
 import com.example.booking.Entity.Ticket;
 import com.example.booking.Entity.User;
@@ -68,11 +67,19 @@ public class TicketController {
     }
 
     @GetMapping("/grouped-by-transaction")
-    public ResponseEntity<ResponseDto<List<Map<String, Object>>>> getTicketsGroupedByTransaction(HttpServletRequest request) {
+    public ResponseEntity<ResponseDto<List<Map<String, Object>>>> getTicketsGroupedByTransaction(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
         String token = JwtUtil.getTokenFromRequest(request);
-        User user=userService.findUserByEmail(jwtUtil.extractUsername(token));
-        return ResponseConfig.success(ticketService.getTicketsGroupedByTransaction(user.getId()));
+        User user = userService.findUserByEmail(jwtUtil.extractUsername(token));
+
+        List<Map<String, Object>> pagedTickets = ticketService.getTicketsGroupedByTransaction(user.getId(), page, size);
+
+        return ResponseConfig.success(pagedTickets);
     }
+
     @PutMapping("/checkin/{id}")
     public ResponseEntity<ResponseDto<String>> checkin(@PathVariable Long id) {
         return  ResponseConfig.success(ticketService.checkin(id));

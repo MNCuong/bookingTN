@@ -19,7 +19,6 @@ public interface UserService {
 
     boolean verifyUser(String token);
 
-    UserResponse registerHotel(RegisterRequest registerRequest);
 
     UserResponse registerAirline(RegisterFlightRequest registerFlightRequest);
 
@@ -30,11 +29,27 @@ public interface UserService {
     void activateUser(String userId);
 
     UserResponse getUserInfoByEmail(String email);
+
     User getUserProfile(HttpServletRequest request);
+
     List<User> getAllUser();
 
     Optional<User> findUserById(long userId);
+
     Page<User> getAllUser(int page, int size, String search);
+
     User changePass(ChangePasswordRequest changePasswordRequest, HttpServletRequest request);
+
+    User forgotPassword(String email);
+
+    User lock(String email);
+
+    User resetPassword(String password, String email);
+
+    void increaseFailedAttempts(String email);
+
+    void resetFailedAttempts(String email);
+
+//    boolean unlockWhenTimeExpired(User user);
 
 }
