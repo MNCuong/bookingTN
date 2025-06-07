@@ -29,4 +29,6 @@ public class FlightBooking {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalTime departureTime;
     private LocalTime arrivalTime;
+    private String transactionId;
+
 }

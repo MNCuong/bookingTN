@@ -1,29 +1,30 @@
 package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
-import com.example.booking.Common.ServiceCommon;
 import com.example.booking.Common.ServiceMessageConstants;
-import com.example.booking.Enum.AircraftStatusEnum;
+import com.example.booking.DTO.Response.FlightResponsePackage.FlightsResponse;
 import com.example.booking.Enum.FlightStateEnum;
 import com.example.booking.Exception.BookingException;
 import com.example.booking.DTO.Request.FlightRequestPackage.FlightRequest;
-import com.example.booking.DTO.Response.FlightResponse;
 import com.example.booking.Entity.*;
 import com.example.booking.Mapper.FlightMapper;
+import com.example.booking.Repository.AirlinesRepository;
+import com.example.booking.Repository.CrewMemberRepository;
+import com.example.booking.Repository.FlightHistoryRepository;
 import com.example.booking.Repository.FlightRepository;
 import com.example.booking.Service.FlightService;
 import com.example.booking.Utils.JwtUtil;
 import com.example.booking.Service.*;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -41,251 +42,198 @@ public class FlightServiceImpl implements FlightService {
     private final FlightRepository flightRepository;
     private final AircraftService aircraftService;
     private final AirlinesService airlinesService;
-    private final FlightDetailsService flightDetailsService;
-    private final CodeSharedFlightService codeSharedFlightService;
     private final AirPortInfoService airPortInfoService;
     private final FlightMapper flightMapper;
     private final JwtUtil jwtUtil;
     private final UserService userService;
-
-
-    //    @Override
-//    public String searchFlights(String depIata, String arrIata) {
-//        RestTemplate restTemplate = new RestTemplate();
-//        String url;
-//
-//        url = API_URL + "?access_key=" + API_KEY
-//                + "&dep_iata=" + depIata
-//                + "&arr_iata=" + arrIata ;
-//        log.info("url:{}", url);
-//        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-//        return response.getBody();
-//    }
-//    @Override
-//    public Object convertToJson(String jsonString) {
-//        try {
-//            ObjectMapper mapper = new ObjectMapper();
-//            return mapper.readValue(jsonString, Map.class);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
-//
+    private final FlightStatusHistoryService flightStatusHistoryService;
+    private final CrewMemberRepository crewRepo;
+    private final FlightHistoryRepository flightHistoryRepository;
+    private final AirlinesRepository airlinesRepository;
 
     @Override
-    public FlightResponse createFlight(FlightRequest flightRequest) {
-        validateFlight(flightRequest);
-        if (flightRequest.getFlight_date() == null || flightRequest.getFlight_date_land() == null) {
-            throw new BookingException("Thời gian cất cánh và hạ cánh không được để trống.");
-        }
-
-        if (flightRequest.getFlight_date().isAfter(flightRequest.getFlight_date_land())) {
-            throw new BookingException("Thời gian hạ cánh phải sau thời gian cất cánh!");
-        }
-
-        Airlines airlines = airlinesService.findById(flightRequest.getAirline_id());
-        Aircraft aircraft = aircraftService.findById(flightRequest.getAircraft_id());
-        AirportInfo arrival = airPortInfoService.findById(flightRequest.getArrival_id());
-        AirportInfo departure = airPortInfoService.findById(flightRequest.getDeparture_id());
-        CodeSharedFlight csf = codeSharedFlightService.findById(flightRequest.getFlight_details_request().getCodesharedId());
-        if (airlines == null || arrival == null || departure == null || aircraft == null) {
-            throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
-        }
-        if (flightRequest.getFlight_date().isAfter(flightRequest.getFlight_date_land())) {
-            throw new BookingException("Thời gian hạ cánh phải sau thời gian cất cánh!");
-        }
-        if (flightRequest.getArrival_id().equals(flightRequest.getDeparture_id())) {
-            throw new BookingException("Sân bay đi và đến không được trùng nhau!");
-        }
-
-        AircraftStatusEnum status = aircraft.getStatus();
-        if (Set.of(
-                AircraftStatusEnum.UNDER_MAINTENANCE,
-                AircraftStatusEnum.REPAIRING,
-                AircraftStatusEnum.AOG,
-                AircraftStatusEnum.OUT_OF_SERVICE,
-                AircraftStatusEnum.RETIRED,
-                AircraftStatusEnum.SCRAPPED
-        ).contains(status)) {
-            throw new BookingException("Máy bay hiện không đủ điều kiện để hoạt động: " + status);
-        }
-        List<Flight> activeFlights = flightRepository.findByAircraftAndFlightStatusIn(
-                aircraft,
-                List.of(
-                        FlightStateEnum.SCHEDULED,
-                        FlightStateEnum.BOARDING,
-                        FlightStateEnum.IN_FLIGHT,
-                        FlightStateEnum.ON_TIME
-                )
-        );
-        for (Flight f : activeFlights) { boolean overlap =
-                    f.getFlightDateLand() != null &&
-                            f.getFlightDate() != null &&
-                            flightRequest.getFlight_date().isBefore(f.getFlightDateLand()) &&
-                            flightRequest.getFlight_date_land().isAfter(f.getFlightDate());
-
-            if (overlap) {
-                throw new BookingException("Máy bay đang phục vụ chuyến bay khác trong khung giờ này");
-            }
-        }
-
-        FlightDetails flightDetailsSave = null;
-
-        if (flightRequest.getFlight_details_request() != null) {
-            String number = flightRequest.getFlight_details_request().getNumber();
-            String iata = flightRequest.getFlight_details_request().getIata();
-            String icao = flightRequest.getFlight_details_request().getIcao();
-
-            flightDetailsSave = flightDetailsService
-                    .findByNumberOrIataOrIcaoAndAirline(number, iata, icao, airlines)
-                    .orElseGet(() -> {
-                        FlightDetails newFlightDetails = FlightDetails.builder()
-                                .iata(iata)
-                                .icao(icao)
-                                .number(number)
-                                .codeshared(csf)
-                                .airline(airlines)
-                                .build();
-                        return flightDetailsService.save(newFlightDetails);
-                    });
-        }
-        Flight flight = Flight.builder()
-                .flightDetails(flightDetailsSave)
-                .flightDate(flightRequest.getFlight_date())
-                .aircraft(aircraft)
-                .flightStatus(flightRequest.getFlight_status())
-                .arrival(arrival)
-                .departure(departure)
-                .airlines(airlines)
-                .priceEconomy(flightRequest.getPriceEconomy())
-                .priceBusiness(flightRequest.getPriceBusiness())
-                .isDeleted(false)
-                .build();
-        return flightMapper.toFlightResponse(flightRepository.save(flight));
+    public Page<FlightsResponse> getFlightHistory(Long flightId) {
+        return null;
     }
 
     @Override
-    public FlightResponse updateFlight(Long id, FlightRequest flightRequest) {
-        if (id == null || id == 0) {
-            throw new BookingException(ServiceMessageConstants.FLIGHT_NOT_FOUND, messageCommon.getMessage(ServiceMessageConstants.FLIGHT_NOT_FOUND));
+    public FlightsResponse createFlight(FlightRequest flightRequest) {
+        log.info("aircraft, {}", flightRequest.getAircraftRegistration());
+        log.info("aircraft, {}", flightRequest.getDepartureAirportId());
+        log.info("aircraft, {}", flightRequest.getArrivalAirportId());
+
+        try {
+            Aircraft aircraft = aircraftService.getByRegistration(flightRequest.getAircraftRegistration());
+            if (aircraft == null) {
+                throw new BookingException(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED, messageCommon.getMessage(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED));
+            }
+            AirportInfo arrival = airPortInfoService.findById(flightRequest.getArrivalAirportId());
+            if (arrival == null) {
+                throw new BookingException(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED, messageCommon.getMessage(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED));
+            }
+            AirportInfo departure = airPortInfoService.findById(flightRequest.getDepartureAirportId());
+            if (departure == null) {
+                throw new BookingException(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED, messageCommon.getMessage(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED));
+            }
+            Airlines airlines=airlinesRepository.findById(flightRequest.getAirlineId()).get();
+            if (airlines == null) {
+                throw new BookingException(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED, "Không tìm thấy hãng bay");
+            }
+            if (flightRequest.getSeats() > aircraftService.getSeatByRegistration(aircraft.getRegistration())) {
+                throw new BookingException("Error", "Ghế được yêu cầu (" + flightRequest.getSeats() + ") vượt quá chỗ ngồi có sẵn (" + aircraftService.getSeatByRegistration(aircraft.getRegistration()) + ")");
+            }
+
+//        List<CrewMember> crew = crewRepo.findAllById(flightRequest.getCrewIds());
+
+            Flight flight = new Flight();
+            flight.setFlightCode(flightRequest.getFlightCode());
+            flight.setDepartureTime(flightRequest.getDepartureTime());
+            flight.setArrivalTime(flightRequest.getArrivalTime());
+            flight.setDepartureAirport(departure);
+            flight.setArrivalAirport(arrival);
+            flight.setStatus(flightRequest.getStatus());
+            flight.setAircraft(aircraft);
+            flight.setCreateAt(LocalDateTime.now());
+            flight.setAirline(airlines);
+//        flight.setCrew(crew);
+            flight.setIsDeleted(false);
+            flight.setArrivalGate(flightRequest.getArrivalGate());
+            flight.setDepartureGate(flightRequest.getDepartureGate());
+            flight.setPriceBusiness(flightRequest.getPriceBusiness());
+            flight.setPriceEconomy(flightRequest.getPriceEconomy());
+            flight.setCheckInDeadline(flightRequest.getCheckInDeadline());
+            flight.setBoardingTime(flightRequest.getBoardingTime());
+            flight.setSeats(flightRequest.getSeats());
+            flight.setAvailableSeats(flightRequest.getSeats());
+
+
+            Flight savedFlight = flightRepository.save(flight);
+            return convertToFlightResponse(savedFlight);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        validateFlight(flightRequest);
-        Optional<Flight> flight = flightRepository.findById(id);
-        return flightMapper.toFlightResponse(flightRepository.save(Flight.builder()
-                .flightDetails(flight.get().getFlightDetails())
-                .flightDate(flight.get().getFlightDate())
-                .aircraft(flight.get().getAircraft())
-                .flightStatus(flight.get().getFlightStatus())
-                .arrival(flight.get().getArrival())
-                .departure(flight.get().getDeparture())
-                .airlines(flight.get().getAirlines())
-                .priceEconomy(flightRequest.getPriceEconomy())
-                .priceBusiness(flightRequest.getPriceBusiness())
-                .isDeleted(flightRequest.getIsDeleted())
-                .build()));
+    }
+
+    @Override
+    public FlightsResponse updateFlight(Long id, FlightRequest flightRequest) {
+        Aircraft aircraft = aircraftService.getByRegistration(flightRequest.getAircraftRegistration());
+        if (aircraft == null) {
+            throw new BookingException(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED, messageCommon.getMessage(ServiceMessageConstants.THIS_TIME_HAS_BEEN_BOOKED));
+        }
+        if (flightRequest.getSeats() > aircraftService.getSeatByRegistration(aircraft.getRegistration())) {
+            throw new BookingException("Error", "Ghế được yêu cầu cập nhật (" + flightRequest.getSeats() + ") vượt quá chỗ ngồi có sẵn (" + aircraftService.getSeatByRegistration(aircraft.getRegistration()) + ")");
+        }
+        Flight flight = flightRepository.findById(id).orElseThrow();
+        flight.setFlightCode(flightRequest.getFlightCode());
+        flight.setDepartureTime(flightRequest.getDepartureTime());
+        flight.setArrivalTime(flightRequest.getArrivalTime());
+        flight.setStatus(flightRequest.getStatus());
+        flight.setUpdateAt(LocalDateTime.now());
+        flight.setSeats(flightRequest.getSeats());
+        flight.setArrivalGate(flightRequest.getArrivalGate());
+        flight.setDepartureGate(flightRequest.getDepartureGate());
+        flight.setPriceBusiness(flightRequest.getPriceBusiness());
+        flight.setPriceEconomy(flightRequest.getPriceEconomy());
+        flight.setCheckInDeadline(flightRequest.getCheckInDeadline());
+        flight.setBoardingTime(flightRequest.getBoardingTime());
+        if (!flight.getStatus().equals(flightRequest.getStatus())) {
+            flightHistoryRepository.save(FlightHistory.builder()
+                    .updateAt(LocalDateTime.now())
+                    .statusReason(flightRequest.getStatusReason())
+                    .flight(flight)
+                    .status(flightRequest.getStatus())
+                    .build());
+        }
+        Flight savedFlight = flightRepository.save(flight);
+        return convertToFlightResponse(savedFlight);
     }
 
     @Override
     public String deleteFlight(Long id) {
-        Optional<Flight> flight = flightRepository.findById(id);
-        if (flight.isEmpty()) {
-            throw new BookingException(ServiceMessageConstants.FLIGHT_NOT_FOUND, messageCommon.getMessage(ServiceMessageConstants.FLIGHT_NOT_FOUND));
-        }
-        if (flight.get().getIsDeleted()) {
-            throw new BookingException(ServiceMessageConstants.FLIGHT_NOT_EXIST, messageCommon.getMessage(ServiceMessageConstants.FLIGHT_NOT_EXIST));
-        }
-        flight.get().setIsDeleted(true);
-        flightRepository.save(flight.get());
+        Flight flight = flightRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Flight not found"));
+        flight.setIsDeleted(true);
+        flight.setUpdateAt(LocalDateTime.now());
+        flightRepository.save(flight);
         return "Xóa chuyến bay thành công";
     }
 
-    private void validateFlight(FlightRequest flightRequest) {
-        if (flightRequest == null) {
-            throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
-        }
-        if (flightRequest.getFlight_details_request() == null || flightRequest.getFlight_details_request().getCodesharedId() == 0) {
-            throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
-        }
-        if (flightRequest.getAircraft_id() == null || flightRequest.getAircraft_id() == 0) {
-            throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
-        }
-        if (flightRequest.getArrival_id() == null || flightRequest.getArrival_id() == 0) {
-            throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
-        }
-        if (flightRequest.getAirline_id() == null || flightRequest.getAirline_id() == 0) {
-            throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
-        }
-        if (flightRequest.getDeparture_id() == null || flightRequest.getDeparture_id() == 0) {
-            throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
-        }
-        if (flightRequest.getFlight_date() == null || flightRequest.getFlight_status() == null) {
-            throw new BookingException(ServiceMessageConstants.CREATE_FLIGHT_FAILD, messageCommon.getMessage(ServiceMessageConstants.CREATE_FLIGHT_FAILD));
-        }
+    public FlightsResponse convertToFlightResponse(Flight flight) {
+        return FlightsResponse.builder()
+                .id(flight.getId())
+                .flightCode(flight.getFlightCode())
+                .departureTime(flight.getDepartureTime())
+                .arrivalTime(flight.getArrivalTime())
+                .departureAirport(flight.getDepartureAirport() != null ? flight.getDepartureAirport().getAirport() : null)
+                .departureAirportId(flight.getDepartureAirport() != null ? flight.getDepartureAirport().getId() : null)
+                .arrivalAirport(flight.getArrivalAirport() != null ? flight.getArrivalAirport().getAirport() : null)
+                .arrivalAirportId(flight.getArrivalAirport() != null ? flight.getArrivalAirport().getId() : null)
+                .status(flight.getStatus())
+                .aircraft(flight.getAircraft() != null ? flight.getAircraft().getRegistration() : null)
+                .isDeleted(flight.getIsDeleted())
+                .createAt(flight.getCreateAt())
+                .updateAt(flight.getUpdateAt())
+                .seats(flight.getSeats())
+                .airlineId(flight.getAirline().getId())
+                .airlineName(flight.getAirline().getName())
+                .airlineCode(flight.getAirline().getCode())
+                .availableSeats(flight.getAvailableSeats())
+                .priceEconomy(flight.getPriceEconomy())
+                .priceBusiness(flight.getPriceBusiness())
+                .departureGate(flight.getDepartureGate())
+                .arrivalGate(flight.getArrivalGate())
+                .checkInDeadline(flight.getCheckInDeadline())
+                .boardingTime(flight.getBoardingTime())
+                .build();
     }
 
     @Override
-    public List<FlightResponse> getAllFlights() {
-        return flightMapper.toFlightResponseList(flightRepository.findAllByIsDeleted(false));
-    }
-
-    @Override
-    public List<FlightResponse> getAllFlightsByAirLine(HttpServletRequest request) {
-        Airlines airlines = ServiceCommon.extractAirline(request, jwtUtil, userService, airlinesService);
-        return flightMapper.toFlightResponseList(flightRepository.findByAirlines(airlines));
-    }
-
-    @Override
-    public List<FlightResponse> searchFlight(LocalDate date, String arrival, String departure) {
-        if (arrival == null || arrival.isEmpty() || departure == null || departure.isEmpty()) {
-            throw new BookingException(ServiceMessageConstants.CHOOSE_DESTINATION_AND_PLACE, messageCommon.getMessage(ServiceMessageConstants.CHOOSE_DESTINATION_AND_PLACE));
+    public Page<FlightsResponse> searchFlightsForDirection(int page, int size, LocalDate date, String departureCity, String arrivalCity) {
+        if (arrivalCity == null || arrivalCity.isEmpty() || departureCity == null || departureCity.isEmpty()) {
+            throw new BookingException(ServiceMessageConstants.CHOOSE_DESTINATION_AND_PLACE,
+                    messageCommon.getMessage(ServiceMessageConstants.CHOOSE_DESTINATION_AND_PLACE));
         }
-        AirportInfo arrival_airport = airPortInfoService.findByIata(arrival);
-        AirportInfo departure_airport = airPortInfoService.findByIata(departure);
-        if (arrival_airport == null || departure_airport == null) {
-            throw new BookingException(ServiceMessageConstants.AIRPORT_NOT_FOUND, messageCommon.getMessage(ServiceMessageConstants.AIRPORT_NOT_FOUND));
 
+        List<AirportInfo> arrivalAirports = airPortInfoService.findAllByCity(arrivalCity);
+        List<AirportInfo> departureAirports = airPortInfoService.findAllByCity(departureCity);
+
+        if (arrivalAirports.isEmpty() || departureAirports.isEmpty()) {
+            throw new BookingException(ServiceMessageConstants.AIRPORT_NOT_FOUND,
+                    messageCommon.getMessage(ServiceMessageConstants.AIRPORT_NOT_FOUND));
         }
+
         LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
-        List<Flight> list = flightRepository.findByArrivalAndDepartureAndFlightDateBetween(
-                arrival_airport, departure_airport, startOfDay, endOfDay);
-        return flightMapper.toFlightResponseList(list);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "departureTime");
+        Page<Flight> flightsPage = flightRepository.findByDepartureAirport_CityAndArrivalAirport_CityAndDepartureTimeAfter(
+                departureCity, arrivalCity, startOfDay, pageable);
+
+        return convertToFlightResponse(flightsPage);
     }
 
+
     @Override
-    public FlightResponse getFlightById(Long id) {
+    public FlightsResponse getFlightById(Long id)  {
         Flight flight = flightRepository.findById(id).orElse(null);
-        return flightMapper.toFlightResponse(flight);
+        return convertToFlightResponse(flight);
     }
 
     @Override
-    public List<FlightResponse> getFlightByStatus(String status) {
+    public Flight getFlightByIdFlight(Long id) throws Exception {
+        return flightRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<Flight> getFlightByStatus(String status) {
         return List.of();
     }
 
-    public List<FlightResponse> getFlightByStatus(FlightStateEnum status) {
+    public List<Flight> getFlightByStatus(FlightStateEnum status) {
         if (status == null) {
-            return flightMapper.toFlightResponseList(flightRepository.findAll());
+            return flightRepository.findAll();
         }
-        return flightMapper.toFlightResponseList(flightRepository.findByFlightStatus(status));
-    }
-
-    @Override
-    public String updateStatusFlight(Long id, FlightStateEnum status) {
-        if (id == null || id == 0) {
-            throw new BookingException(ServiceMessageConstants.FLIGHT_NOT_FOUND, messageCommon.getMessage(ServiceMessageConstants.FLIGHT_NOT_FOUND));
-        }
-        Flight flight = flightRepository.findById(id).orElse(null);
-        assert flight != null;
-        if (!flight.getFlightStatus().canTransitionTo(status)) {
-            throw new BookingException(ServiceMessageConstants.NOT_UPDATE_STATE_FLIGHT, messageCommon.getMessage(ServiceMessageConstants.NOT_UPDATE_STATE_FLIGHT));
-
-        }
-        flight.setFlightStatus(status);
-        flightRepository.save(flight);
-        return "update flight state success";
-
+        return null;
     }
 
 
@@ -297,4 +245,23 @@ public class FlightServiceImpl implements FlightService {
         return flight.getAircraft().getType().getSeatCapacity();
     }
 
+//    @Override
+//    public List<Airlines> getAllAriline() {
+//        return airlinesService.findAll();
+//    }
+
+    @Override
+    public Page<FlightsResponse> getAllFlights(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Flight> flights = flightRepository.findAllByIsDeleted(false, pageable);
+        return flights.map(this::convertToFlightResponse);
+    }
+
+    public Page<FlightsResponse> convertToFlightResponse(Page<Flight> flightPage) {
+        List<FlightsResponse> dtos = flightPage.stream()
+                .map(this::convertToFlightResponse)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtos, flightPage.getPageable(), flightPage.getTotalElements());
+    }
 }

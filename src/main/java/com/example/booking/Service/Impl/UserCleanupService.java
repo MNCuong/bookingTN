@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Service
 public class UserCleanupService {
@@ -14,12 +16,12 @@ public class UserCleanupService {
 
     @Scheduled(fixedRate = 60000)  // Chạy mỗi 1 phút
     public void deleteUnverifiedUsers() {
-//        List<String> unverifiedUserIds = userService.getUnverifiedUserIds();
-//        for (String userId : unverifiedUserIds) {
-//            if (!verificationService.isTokenValid(userId, "")) {  // Token hết hạn
-//                Long idUser=Long.parseLong(userId);
-//                userService.deleteById(idUser);
-//            }
-//        }
+        List<String> unverifiedUserIds = userService.getUnverifiedUserIds();
+        for (String userId : unverifiedUserIds) {
+            if (!verificationService.isTokenValid(userId, "")) {  // Token hết hạn
+                Long idUser=Long.parseLong(userId);
+                userService.deleteById(idUser);
+            }
+        }
     }
 }

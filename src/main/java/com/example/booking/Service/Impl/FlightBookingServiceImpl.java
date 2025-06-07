@@ -2,36 +2,21 @@ package com.example.booking.Service.Impl;
 
 import com.example.booking.Common.MessageCommon;
 import com.example.booking.Common.ServiceCommon;
-import com.example.booking.Common.ServiceMessageConstants;
-import com.example.booking.DTO.Request.FlightRequestPackage.FlightBookingRequest;
-import com.example.booking.DTO.Response.FlightResponsePackage.FlightBookingResponse;
+
 import com.example.booking.Entity.FlightBooking;
-import com.example.booking.Entity.User;
-import com.example.booking.Entity.UserProfileFlight;
 import com.example.booking.Enum.AircraftTypeEnums;
-import com.example.booking.Enum.FlightBookingStateEnum;
-import com.example.booking.Exception.BookingException;
 import com.example.booking.Manager.FlightSeatManager;
 import com.example.booking.Repository.FlightBookingRepository;
 import com.example.booking.Service.FlightBookingService;
 import com.example.booking.Service.UserService;
 import com.example.booking.Utils.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -50,6 +35,7 @@ public class FlightBookingServiceImpl implements FlightBookingService {
     private final FlightSeatManager flightSeatManager;
     private final ServiceCommon serviceCommon;
     private final MessageCommon messageCommon;
+   ;
 
     @Override
     public FlightBooking findById(long id) {
@@ -62,16 +48,16 @@ public class FlightBookingServiceImpl implements FlightBookingService {
     }
 
 
-    @Override
-    public String searchFlights(String depIata, String arrIata) {
-        RestTemplate restTemplate = new RestTemplate();
-        String url;
-
-        url = API_URL + "?access_key=" + API_KEY + "&dep_iata=" + depIata + "&arr_iata=" + arrIata;
-        log.info("url:{}", url);
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-        return response.getBody();
-    }
+//    @Override
+//    public String searchFlights() {
+//        RestTemplate restTemplate = new RestTemplate();
+//        String url;
+//
+////        url = API_URL + "?access_key=" + API_KEY + "&dep_iata=" + depIata + "&arr_iata=" + arrIata;
+//        log.info("url:{}", url);
+//        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+//        return response.getBody();
+//    }
 
     @Override
     public Object convertToJson(String jsonString) {
@@ -97,65 +83,72 @@ public class FlightBookingServiceImpl implements FlightBookingService {
         return totalSeats - bookedSeats;
     }
 
-    @Transactional
-    @Override
-    public FlightBookingResponse bookFlight(FlightBookingRequest flightBookingRequest, HttpServletRequest httpServletRequest) {
-        int availableSeats = flightSeatManager.getAvailableSeats(flightBookingRequest.getFlightCode(), flightBookingRequest.getAircraftModel(), flightBookingRequest.getFlightDate(), flightBookingRequest.getDepartureTime(), flightBookingRequest.getArrivalTime());
-        LocalDate flightDate = flightBookingRequest.getFlightDate();
-        if (availableSeats < flightBookingRequest.getSeatTotal()) {
-            throw new BookingException(ServiceMessageConstants.NOT_ENOUGH_SEAT, messageCommon.getMessage(ServiceMessageConstants.NOT_ENOUGH_SEAT));
-        }
-        LocalTime departureTime = flightBookingRequest.getDepartureTime();
-        LocalTime arrivalTime = flightBookingRequest.getArrivalTime();
-
-        List<String> bookedSeats = flightBookingRepository.findConfirmedSeats(flightBookingRequest.getFlightCode(), flightDate, departureTime,arrivalTime);
-
-        List<String> seatNumbers = flightBookingRequest.getSeatNumber();
-        for (String seat : seatNumbers) {
-            if (bookedSeats.contains(seat)) {
-                throw new BookingException(ServiceMessageConstants.SEAT_ALREADY_BOOKED, "Ghế " + seat + " đã được đặt!");
-            }
-        }
-
-        flightSeatManager.bookSeats(flightBookingRequest.getFlightCode(), flightDate, departureTime, arrivalTime, flightBookingRequest.getSeatTotal());
-
-        String token = JwtUtil.getTokenFromRequest(httpServletRequest);
-        String email = jwtUtil.extractUsername(token);
-        User user = userService.findUserByEmail(email);
-
-        List<FlightBooking> bookings = new ArrayList<>();
-        String bookingId = serviceCommon.generateBookingId();
-        int index = 0;
-
-        for (UserProfileFlight userProfileFlight : flightBookingRequest.getUserProfileFlight()) {
-            if (index >= seatNumbers.size()) {
-                throw new BookingException(ServiceMessageConstants.NOT_ENOUGH_SEAT, messageCommon.getMessage(ServiceMessageConstants.NOT_ENOUGH_SEAT));
-            }
-
-            FlightBooking booking = flightBookingRepository.save(FlightBooking.builder()
-                    .flightCode(flightBookingRequest.getFlightCode())
-                    .user(user)
-                    .idBooking(bookingId)
-                    .createdAt(LocalDateTime.now())
-                    .seatNumber(seatNumbers.get(index))
-                    .flightDate(flightBookingRequest.getFlightDate())
-                    .totalPrice(flightBookingRequest.getTotalPrice().divide(BigDecimal.valueOf(flightBookingRequest.getSeatTotal())))
-                    .departureTime(departureTime)
-                    .arrivalTime(arrivalTime)
-                    .status(FlightBookingStateEnum.PENDING.toString())
-                    .build());
-
-            bookings.add(booking);
-            index++;
-        }
-
-
-        return FlightBookingResponse.builder()
-                .flightBookingId(bookingId)
-                .message("Đặt vé thành công!")
-                .status(FlightBookingStateEnum.PENDING.toString())
-                .build();
-    }
+//    @Transactional
+//    @Override
+//    public FlightBookingResponse bookFlight(FlightBookingRequest flightBookingRequest, HttpServletRequest httpServletRequest) {
+//        int availableSeats = flightSeatManager.getAvailableSeats(flightBookingRequest.getFlightCode(), flightBookingRequest.getAircraftModel(), flightBookingRequest.getFlightDate(), flightBookingRequest.getDepartureTime(), flightBookingRequest.getArrivalTime());
+//        LocalDate flightDate = flightBookingRequest.getFlightDate();
+//        if (availableSeats < flightBookingRequest.getSeatTotal()) {
+//            throw new BookingException(ServiceMessageConstants.NOT_ENOUGH_SEAT, messageCommon.getMessage(ServiceMessageConstants.NOT_ENOUGH_SEAT));
+//        }
+//        LocalTime departureTime = flightBookingRequest.getDepartureTime();
+//        LocalTime arrivalTime = flightBookingRequest.getArrivalTime();
+//        List<String> bookedSeats = flightBookingRepository.findConfirmedSeats(flightBookingRequest.getFlightCode(), flightDate, departureTime,arrivalTime);
+//        List<String> seatNumbers = flightBookingRequest.getSeatNumber();
+//        for (String seat : seatNumbers) {
+//            if (bookedSeats.contains(seat)) {
+//                throw new BookingException(ServiceMessageConstants.SEAT_ALREADY_BOOKED, "Ghế " + seat + " đã được đặt!");
+//            }
+//        }
+//
+//        flightSeatManager.bookSeats(flightBookingRequest.getFlightCode(), flightDate, departureTime, arrivalTime, flightBookingRequest.getSeatTotal());
+//
+//        String token = JwtUtil.getTokenFromRequest(httpServletRequest);
+//        String email = jwtUtil.extractUsername(token);
+//        User user = userService.findUserByEmail(email);
+//
+//        List<FlightBooking> bookings = new ArrayList<>();
+//        String bookingId = serviceCommon.generateBookingId();
+//        int index = 0;
+//        String status = (flightBookingRequest.getTransactionId() != null) ? FlightBookingStateEnum.CONFIRMED.toString() : FlightBookingStateEnum.PENDING.toString();
+//        for (UserProfileFlight userProfileFlight : flightBookingRequest.getUserProfileFlight()) {
+//            if (index >= seatNumbers.size()) {
+//                throw new BookingException(ServiceMessageConstants.NOT_ENOUGH_SEAT, messageCommon.getMessage(ServiceMessageConstants.NOT_ENOUGH_SEAT));
+//            }
+//            ;
+//
+//          UserProfileFlightResponse upf=  userProfileFlightService.save(UserProfileFlightRequest.builder()
+//                    .dateOfBirth(userProfileFlight.getDateOfBirth())
+//                    .fullName(userProfileFlight.getFullName())
+//                    .gender(userProfileFlight.getGender())
+//                    .nationality(userProfileFlight.getNationality())
+////                    .nationalityCode(userProfileFlight.getNationalityCode())
+//                    .build());
+//            FlightBooking booking = flightBookingRepository.save(FlightBooking.builder()
+//                    .flightCode(flightBookingRequest.getFlightCode())
+//                    .user(user)
+//                    .transactionId(flightBookingRequest.getTransactionId())
+//                    .idBooking(bookingId)
+//                    .createdAt(LocalDateTime.now())
+//                    .seatNumber(seatNumbers.get(index))
+//                    .flightDate(flightBookingRequest.getFlightDate())
+//                    .totalPrice(flightBookingRequest.getTotalPrice().divide(BigDecimal.valueOf(flightBookingRequest.getSeatTotal())))
+//                    .departureTime(departureTime)
+//                    .arrivalTime(arrivalTime)
+//                    .status(status)
+////                            .userProfileFlight(userProfileFlightMapper.toUserProfileFlightResponse())
+//                    .build());
+//            bookings.add(booking);
+//
+//            index++;
+//        }
+//        return FlightBookingResponse.builder()
+//                .flightBookingId(bookingId)
+//                .message("Đặt vé thành công!")
+//                .transactionId(flightBookingRequest.getTransactionId())
+//                .status(status)
+//                .build();
+//    }
 
 
 }

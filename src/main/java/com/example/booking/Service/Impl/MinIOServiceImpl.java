@@ -164,7 +164,64 @@ public class MinIOServiceImpl implements MinIOService {
         }
     }
 
-    //    hàm lấy ảnh
+    @Override
+    public void uploadFileAriCraft(InputStream fileStream, String fileName, String contentType, String Registration) throws MinioException {
+        try {
+            String newFileName = "Aircraft" + "/" + Registration + "/" + System.currentTimeMillis() + "_" + fileName;
+
+            boolean isExist = minioClient.bucketExists(BucketExistsArgs.builder()
+                    .bucket(bucketName).build());
+            if (!isExist) {
+                minioClient.makeBucket(MakeBucketArgs.builder()
+                        .bucket(bucketName).build());
+            }
+
+            // Upload file lên MinIO
+//            minioClient.putObject(bucketName, newFileName, fileStream, contentType);
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(newFileName)
+                            .stream(fileStream, fileStream.available(), -1)
+                            .contentType(contentType)
+                            .build()
+            );
+
+        } catch (Exception e) {
+            log.error("Error uploading file to MinIO: {}", e.getMessage());
+            throw new MinioException("Error uploading file to MinIO", e.getMessage());
+        }
+    }
+
+    @Override
+    public void uploadFileAirline(InputStream fileStream, String fileName, String contentType, String code) throws MinioException {
+        try {
+            String newFileName = "Airline" + "/" + code + "/" + System.currentTimeMillis() + "_" + fileName;
+
+            boolean isExist = minioClient.bucketExists(BucketExistsArgs.builder()
+                    .bucket(bucketName).build());
+            if (!isExist) {
+                minioClient.makeBucket(MakeBucketArgs.builder()
+                        .bucket(bucketName).build());
+            }
+
+            // Upload file lên MinIO
+//            minioClient.putObject(bucketName, newFileName, fileStream, contentType);
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(newFileName)
+                            .stream(fileStream, fileStream.available(), -1)
+                            .contentType(contentType)
+                            .build()
+            );
+
+        } catch (Exception e) {
+            log.error("Error uploading file to MinIO: {}", e.getMessage());
+            throw new MinioException("Error uploading file to MinIO", e.getMessage());
+        }
+    }
+
     @Override
     public List<String> getImagesByPrefix(String prefix) {
         List<String> imageUrls = new ArrayList<>();
@@ -194,6 +251,7 @@ public class MinIOServiceImpl implements MinIOService {
         }
         return imageUrls;
     }
+
     @Override
     public List<String> getImagesByCarId(String idCar) {
         List<String> imageUrls = new ArrayList<>();
@@ -229,6 +287,72 @@ public class MinIOServiceImpl implements MinIOService {
             e.printStackTrace();
         }
         return imageUrls;
+    }
+
+    public String getImagesByPrefixAircraft(String prefix) {
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(prefix)
+                            .recursive(true)
+                            .build()
+            );
+
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                String url = minioClient.getPresignedObjectUrl(
+                        GetPresignedObjectUrlArgs.builder()
+                                .method(Method.GET)
+                                .bucket(bucketName)
+                                .object(item.objectName())
+                                .expiry(60 * 60 * 24 * 7)
+                                .build()
+                );
+                return url;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getImagesByPrefixAirline(String prefix) {
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(prefix)
+                            .recursive(true)
+                            .build()
+            );
+
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                String url = minioClient.getPresignedObjectUrl(
+                        GetPresignedObjectUrlArgs.builder()
+                                .method(Method.GET)
+                                .bucket(bucketName)
+                                .object(item.objectName())
+                                .expiry(60 * 60 * 24 * 7)
+                                .build()
+                );
+                return url;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public String getAirCraftImage(String registration) {
+        return getImagesByPrefixAircraft("Aircraft/" + registration + "/");
+    }
+
+    @Override
+    public String getAirlineImage(String code) {
+        return getImagesByPrefixAirline("Airline/" + code + "/");
     }
 
 }

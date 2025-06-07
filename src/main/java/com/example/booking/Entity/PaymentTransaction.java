@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RequiredArgsConstructor
 @AllArgsConstructor
@@ -38,7 +39,6 @@ public class PaymentTransaction {
     @Column(nullable = true)
     private String description;
 
-    // Quan hệ với User (Người thanh toán)
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
@@ -47,4 +47,6 @@ public class PaymentTransaction {
 
     @Column(nullable = true)
     private TypeServiceEnum typeService;
+    @OneToMany(mappedBy = "paymentTransaction", cascade = CascadeType.ALL)
+    private List<Ticket> tickets;
 }

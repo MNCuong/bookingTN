@@ -36,6 +36,7 @@ public class ServiceMessageConstants {
     public static final String FULLNAME_AIRLINE_EXIST = "ER-030";
     public static final String FLIGHT_NOT_FOUND = "ER-031";
     public static final String FLIGHT_NOT_EXIST = "ER-032";
+    public static final String REGISTRATION_EXISTED = "ER-033";
 
     public ServiceMessageConstants (){}
 }

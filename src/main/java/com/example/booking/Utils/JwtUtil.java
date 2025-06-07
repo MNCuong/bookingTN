@@ -80,6 +80,7 @@ public class JwtUtil {
         }
     }
 
+
     public boolean validateToken(String token, UserDetails userDetails) {
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);

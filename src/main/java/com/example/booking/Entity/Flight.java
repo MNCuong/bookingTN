@@ -1,55 +1,73 @@
 package com.example.booking.Entity;
 
-import com.example.booking.Enum.FlightStateEnum;
 import lombok.*;
-
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Builder
 @Entity
+@Table(name = "flights")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "flights")
+@Builder
 public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private LocalDateTime flightDate;
-    private LocalDateTime flightDateLand;
-    @Enumerated(EnumType.STRING)
-    private FlightStateEnum flightStatus;
 
+    private String flightCode;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    private LocalDateTime departureTime;
+    private LocalDateTime arrivalTime;
+
+    @ManyToOne
     @JoinColumn(name = "departure_id")
-    private AirportInfo departure;
+    private AirportInfo departureAirport;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "arrival_id")
-    private AirportInfo arrival;
+    private AirportInfo arrivalAirport;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "Airlines_id")
-    private Airlines airlines;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "flight_details_id")
-    private FlightDetails flightDetails;
+    private String status;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "aircraft_id")
+    private String statusReason;
+
+    @ManyToOne
     private Aircraft aircraft;
-    @Enumerated(EnumType.STRING)
-    private FlightStateEnum status;
 
-    private BigDecimal priceEconomy;
-    private BigDecimal priceBusiness;
+    private Double priceEconomy;
+    private Double priceBusiness;
+
+    private String departureGate;
+    private String arrivalGate;
+
+    private LocalDateTime checkInDeadline;
+    private LocalDateTime boardingTime;
+
+    private String bookingReference;
+
     private Boolean isDeleted;
+
+    private LocalDateTime createAt;
+    private LocalDateTime updateAt;
+    private Integer seats;
+    private Integer availableSeats;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "airline_id", nullable = false)
+    private Airlines airline;
+
+    @ManyToMany
+    @JoinTable(
+            name = "flight_crew",
+            joinColumns = @JoinColumn(name = "flight_id"),
+            inverseJoinColumns = @JoinColumn(name = "crew_id")
+    )
+    private List<CrewMember> crew;
+
+    @OneToMany(mappedBy = "flight")
+    private List<Ticket> tickets;
 }
-
-
 

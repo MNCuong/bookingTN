@@ -28,16 +28,16 @@ public class User {
     private Date tokenExpiryDate;
     private boolean verified;
     private String roles;
+    private boolean active;
+    private int count;
+    private LocalDateTime lock_time;
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference
     private UserProfile userProfile;
     /**
-     *danh sách đối tượng , loại sẽ đứng trước fullname của mỗi tài khoản
      *
      *
-     * @param hotel khách sạn
      * @param flight chuyến bay
-     * @param hotel khách hàng
      *
      */
 }

@@ -12,7 +12,6 @@ public enum FlightStateEnum {
     LANDED,         // Đã hạ cánh
     CANCELLED;     // Bị hủy
 
-    // Các trạng thái có thể cập nhật từ mỗi trạng thái
     private static final Set<FlightStateEnum> FINAL_STATES = EnumSet.of(LANDED, CANCELLED);
 
     private static final Set<FlightStateEnum> SCHEDULED_ALLOWED = EnumSet.of(ON_TIME, DELAYED, CANCELLED);

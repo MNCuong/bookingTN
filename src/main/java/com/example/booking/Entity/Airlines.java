@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -15,6 +17,9 @@ public class Airlines {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String iata;
-    private String icao;
+    private String code;
+    @Column(columnDefinition = "TEXT")
+    private String logoUrl;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

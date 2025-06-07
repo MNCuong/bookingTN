@@ -15,7 +15,7 @@ public class ResponseConfig<T> {
     }
 
     public static <T> ResponseEntity<ResponseDto<T>> success(T body) {
-        ResponseDto responseDto = ResponseDto.builder().data(body).code("200").build();
+        ResponseDto responseDto = ResponseDto.builder().data(body).code("200").message("success").build();
         return new ResponseEntity(responseDto, HttpStatus.OK);
     }
 

@@ -5,28 +5,32 @@ import com.example.booking.Entity.Airlines;
 import com.example.booking.Entity.AirportInfo;
 import com.example.booking.Entity.Flight;
 import com.example.booking.Enum.FlightStateEnum;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 
+@Repository
 public interface FlightRepository extends JpaRepository<Flight, Long> {
-    List<Flight> findByArrivalAndDeparture(AirportInfo arrival, AirportInfo departure);
+    @Query("SELECT f FROM Flight f \n" +
+            "WHERE f.departureAirport.code IN :departureCodes\n" +
+            "AND f.arrivalAirport.code IN :arrivalCodes\n" +
+            "AND f.departureTime >= :startTime\n")
+    Page<Flight> searchFlightsMultipleAirports(
+            @Param("departures") List<AirportInfo> departureAirports,
+            @Param("arrivals") List<AirportInfo> arrivalAirports,
+            @Param("startTime") LocalDateTime startTime,
+            Pageable pageable
+    );
 
-    List<Flight> findByFlightStatus(FlightStateEnum flightStatus);
 
-    List<Flight> findByAirlines(Airlines airlines);
+    Page<Flight> findAllByIsDeleted(boolean isDeleted, Pageable pageable);
 
-    List<Flight> findAllByIsDeleted(Boolean isDeleted);
 
-    List<Flight> findByAirlinesAndIsDeleted(Airlines airlines, Boolean isDeleted);
-
-    List<Flight> findByArrivalAndDepartureAndFlightDateBetween(AirportInfo arrival, AirportInfo departure, LocalDateTime flightDateAfter, LocalDateTime flightDateBefore);
-
-//    boolean findByAircraft(Aircraft aircraft);
-
-    List<Flight> findByAircraftAndFlightStatusIn(Aircraft aircraft, Collection<FlightStateEnum> flightStatuses);
-
-    List<Flight> findByAircraft(Aircraft aircraft);
+    Page<Flight> findByDepartureAirport_CityAndArrivalAirport_CityAndDepartureTimeAfter(String departureAirportCity, String arrivalAirportCity, LocalDateTime departureTimeAfter, Pageable pageable);
 }

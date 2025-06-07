@@ -2,9 +2,12 @@ package com.example.booking.Service;
 
 
 import com.example.booking.DTO.Request.FlightRequestPackage.FlightRequest;
-import com.example.booking.DTO.Response.FlightResponse;
+import com.example.booking.DTO.Response.FlightResponsePackage.FlightsResponse;
+import com.example.booking.Entity.Airlines;
+import com.example.booking.Entity.Flight;
 import com.example.booking.Enum.FlightStateEnum;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDate;
@@ -12,24 +15,30 @@ import java.util.List;
 
 public interface FlightService {
 
+    Page<FlightsResponse> getFlightHistory(Long flightId);
 
-    FlightResponse createFlight(FlightRequest flightRequest);
+    FlightsResponse createFlight(FlightRequest flightRequest);
 
-    FlightResponse updateFlight(Long id, FlightRequest flightRequest);
+    FlightsResponse updateFlight(Long id, FlightRequest flightRequest);
 
     String deleteFlight(Long id);
 
-    List<FlightResponse> getAllFlights();
+//    List<Flight> getAllFlights();
 
-    List<FlightResponse> getAllFlightsByAirLine(HttpServletRequest request);
+//    List<Flight> getAllFlightsByAirLine(HttpServletRequest request);
 
-    List<FlightResponse> searchFlight(LocalDate date,String arrival, String departure);
+    Page<FlightsResponse> searchFlightsForDirection(int page, int size,LocalDate date, String arrival, String departure);
 
-    FlightResponse getFlightById(Long id);
+    FlightsResponse getFlightById(Long id);
 
-    List<FlightResponse> getFlightByStatus(String status);
+    Flight getFlightByIdFlight(Long id) throws Exception;
 
-    String updateStatusFlight(Long id, FlightStateEnum status);
+    List<Flight> getFlightByStatus(String status);
+
+    //    String updateStatusFlight(Long id, FlightStateEnum status);
     int getSeat(Long id);
+
+    //    List<Airlines>  getAllAriline();
+    Page<FlightsResponse> getAllFlights(int page, int size);
 
 }
